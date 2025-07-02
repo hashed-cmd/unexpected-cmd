@@ -1,1 +1,443 @@
+if unexpected_LOAD then return end
 
+pcall(function() getgenv().unexpected_LOAD = true end)
+
+function missing(t, f, fallback)
+    if type(f) == t then return f end
+    return fallback
+end
+
+--#core
+cloneref = missing("function", cloneref, function(...) return ... end)
+queueteleport =  missing("function", queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport))
+--#coreEnd
+
+--#imports
+COREGUI = cloneref(game:GetService("CoreGui"))
+PLRS = cloneref(game:GetService("Players"))
+UIS = cloneref(game:GetService("UserInputService"))
+RS = cloneref(game:GetService("RunService"))
+GS = cloneref(game:GetService("GuiService"))
+LP = cloneref(PLRS.LocalPlayer)
+--#importsEnd
+
+local currentVersion = "1"
+
+local function randomString(length, charset)
+	length = length or math.random(10, 20)
+	charset = charset or "abcdefghijklmnopqRStuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	local chars = {}
+	local charsetLength = #charset
+	for i = 1, length do
+		local rand = math.random(1, charsetLength)
+		chars[i] = charset:sub(rand, rand)
+	end
+	return table.concat(chars)
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = randomString()
+gui.Parent = gethui() or COREGUI
+
+local commandbar = Instance.new("Frame", gui)
+commandbar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+commandbar.Position = UDim2.new(0.5, -159, 1, -160)
+commandbar.Size = UDim2.new(0, 318, 0, 60)
+
+Instance.new("UIStroke", commandbar).Color = Color3.fromRGB(60, 60, 60)
+
+local predictor = Instance.new("TextLabel", commandbar)
+predictor.BackgroundTransparency = 1
+predictor.Position = UDim2.new(0.5, -142, 0.5, -25)
+predictor.Size = UDim2.new(0, 284, 0, 50)
+predictor.Font = Enum.Font.Gotham
+predictor.TextColor3 = Color3.fromRGB(100, 100, 100)
+predictor.TextSize = 20
+predictor.TextXAlignment = Enum.TextXAlignment.Left
+predictor.Text = ""
+predictor.ZIndex = 1
+
+local command = Instance.new("TextBox", commandbar)
+command.BackgroundTransparency = 1
+command.Position = predictor.Position
+command.Size = predictor.Size
+command.Font = Enum.Font.Gotham
+command.PlaceholderText = "unexpected v"..currentVersion
+command.Text = ""
+command.ClearTextOnFocus = false
+command.TextColor3 = Color3.fromRGB(255, 255, 255)
+command.TextSize = 20
+command.TextXAlignment = Enum.TextXAlignment.Left
+command.ZIndex = 2
+
+local commandlist = Instance.new("Frame", gui)
+commandlist.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+commandlist.Position = UDim2.new(0.5, -159,1, -455)
+commandlist.Size = UDim2.new(0, 318, 0, 285)
+commandlist.Visible = false
+
+Instance.new("UIStroke", commandlist).Color = Color3.fromRGB(60, 60, 60)
+
+local header = Instance.new("TextLabel", commandlist)
+header.BackgroundTransparency = 1
+header.Position = UDim2.new(0.05, 0, 0.056, 0)
+header.Size = UDim2.new(0, 286, 0, 26)
+header.Font = Enum.Font.Gotham
+header.Text = "command list"
+header.TextColor3 = Color3.fromRGB(178, 178, 178)
+header.TextSize = 20
+header.TextXAlignment = Enum.TextXAlignment.Left
+
+local scrollinglist = Instance.new("ScrollingFrame", commandlist)
+scrollinglist.Active = true
+scrollinglist.BackgroundTransparency = 1
+scrollinglist.Position = UDim2.new(0.05, 0, 0.168, 0)
+scrollinglist.Size = UDim2.new(0, 286, 0, 221)
+scrollinglist.ScrollBarThickness = 0
+scrollinglist.CanvasSize = UDim2.new()
+
+local commandexample = Instance.new("TextButton")
+commandexample.BackgroundTransparency = 1
+commandexample.Size = UDim2.new(0, 286, 0, 31)
+commandexample.Font = Enum.Font.Gotham
+commandexample.TextColor3 = Color3.fromRGB(255, 255, 255)
+commandexample.TextSize = 16
+commandexample.TextXAlignment = Enum.TextXAlignment.Left
+commandexample.Visible = false
+
+local unexpected = {}
+local keepUX = false
+local commandListData = {}
+local index = 0
+
+function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
+	aliases = aliases or {}
+	usageArgs = usageArgs or {}
+
+	local entry = {
+		Original = name,
+		Description = desc,
+		Execute = func,
+		Aliases = aliases,
+	}
+
+	commandListData[name:lower()] = entry
+	for _, alias in ipairs(aliases) do
+		commandListData[alias:lower()] = entry
+	end
+
+	local btn = commandexample:Clone()
+	local allNames = {name}
+	for _, alias in ipairs(aliases) do
+		table.insert(allNames, alias)
+	end
+	btn.Text = table.concat(allNames, " / ")
+	btn.Visible = true
+	btn.Position = UDim2.new(0, 0, 0, index * 32)
+	btn.Parent = scrollinglist
+
+	local usage = "usage: " .. name
+	if #usageArgs > 0 then
+		usage = usage .. " [" .. table.concat(usageArgs, "] [") .. "]"
+	end
+
+	local tooltip = Instance.new("TextLabel")
+    tooltip.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    tooltip.Visible = false
+    tooltip.Font = Enum.Font.Gotham
+    tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tooltip.TextSize = 18
+    tooltip.TextWrapped = true
+    tooltip.TextXAlignment = Enum.TextXAlignment.Left
+    tooltip.TextYAlignment = Enum.TextYAlignment.Top
+    tooltip.ZIndex = 9999
+    tooltip.AutomaticSize = Enum.AutomaticSize.XY
+    tooltip.TextScaled = false
+    tooltip.Size = UDim2.new(0, 300, 0, 0)
+    tooltip.Parent = gui
+
+    local padding = Instance.new("UIPadding", tooltip)
+    padding.PaddingTop = UDim.new(0, 6)
+    padding.PaddingBottom = UDim.new(0, 6)
+    padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8)
+
+    local constraint = Instance.new("UITextSizeConstraint", tooltip)
+    constraint.MaxTextSize = 18
+    
+	local onHover = false
+	local hoverToken = nil
+
+	btn.MouseEnter:Connect(function()
+		onHover = true
+		local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
+		tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
+		tooltip.Text = desc .. "\n" .. usage
+		tooltip.Visible = true
+		hoverToken = tick()
+	end)
+
+	btn.MouseLeave:Connect(function()
+		local thisToken = tick()
+		hoverToken = thisToken
+		onHover = false
+		if hoverToken == thisToken then
+			tooltip.Visible = false
+		end
+	end)
+
+	RS.RenderStepped:Connect(function()
+		if onHover and tooltip.Visible then
+			local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
+			tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
+		end
+	end)
+
+	btn.MouseButton1Click:Connect(function()
+		command.Text = name
+		task.wait(0.01)
+		command:CaptureFocus()
+	end)
+
+	index += 1
+	scrollinglist.CanvasSize = UDim2.new(0, 0, 0, index * 32)
+end
+
+--#notification
+local notificationQueue = {}
+local isNotif = false
+
+local notifUI = Instance.new("Frame")
+notifUI.Name = "notification"
+notifUI.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+notifUI.BorderSizePixel = 0
+notifUI.Position = UDim2.new(0, 330,1, -169)
+notifUI.Size = UDim2.new(0, 208, 0, 169)
+notifUI.Visible = false
+notifUI.Parent = commandbar
+
+local notiftitle = Instance.new("TextLabel", notifUI)
+notiftitle.Name = "notiftitle"
+notiftitle.BackgroundTransparency = 1
+notiftitle.Position = UDim2.new(0.074, 0, 0.092, 0)
+notiftitle.Size = UDim2.new(0, 177, 0, 20)
+notiftitle.Font = Enum.Font.Gotham
+notiftitle.Text = "Notification"
+notiftitle.TextColor3 = Color3.fromRGB(178, 178, 178)
+notiftitle.TextSize = 20
+notiftitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local notiftext = Instance.new("TextLabel", notifUI)
+notiftext.Name = "notiftext"
+notiftext.BackgroundTransparency = 1
+notiftext.Position = UDim2.new(0.074, 0, 0.26, 0)
+notiftext.Size = UDim2.new(0, 177, 0, 113)
+notiftext.Font = Enum.Font.Gotham
+notiftext.Text = "Lorem ipsum"
+notiftext.TextWrapped = true
+notiftext.TextXAlignment = Enum.TextXAlignment.Left
+notiftext.TextYAlignment = Enum.TextYAlignment.Top
+notiftext.TextColor3 = Color3.fromRGB(178, 178, 178)
+notiftext.TextSize = 20
+
+local loadingBar = Instance.new("Frame", notifUI)
+loadingBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+loadingBar.BorderSizePixel = 0
+loadingBar.Position = UDim2.new(0, 0, 1, -4)
+loadingBar.Size = UDim2.new(1, 0, 0, 4)
+loadingBar.AnchorPoint = Vector2.new(0, 1)
+
+local TweenService = game:GetService("TweenService")
+
+function unexpected:notify(title, ...)
+    local args = {...}
+    local text = table.concat(args, " ")
+
+    table.insert(notificationQueue, {
+        title = tostring(title or "Notification"),
+        text = text
+    })
+
+    local total = #notificationQueue
+    if isNotif then
+        local currentTitle = notiftitle.Text:match("^(.-) %(%d+%)$") or notiftitle.Text
+        notiftitle.Text = string.format("%s (%d)", currentTitle, total + 1)
+    else
+        notifQueue()
+    end
+end
+
+function notifQueue()
+    if #notificationQueue == 0 then
+        isNotif = false
+        notifUI.Visible = false
+        return
+    end
+
+    isNotif = true
+    local data = table.remove(notificationQueue, 1)
+
+    local total = #notificationQueue + 1
+    notiftitle.Text = string.format("%s (%d)", tostring(data.title), total)
+    notiftext.Text = tostring(data.text or "")
+
+    loadingBar.Size = UDim2.new(1, 0, 0, 4)
+    notifUI.Visible = true
+
+    local barTween = TweenService:Create(loadingBar, TweenInfo.new(5, Enum.EasingStyle.Linear), {
+        Size = UDim2.new(0, 0, 0, 4)
+    })
+    barTween:Play()
+
+    task.delay(5, function()
+        notifUI.Visible = false
+        notifQueue()
+    end)
+end
+--#notificationEnd
+
+--#inputs
+UIS.InputBegan:Connect(function(input, processed)
+    if input.KeyCode == Enum.KeyCode.Semicolon then
+        task.wait(0.01)
+        command.Text = ""
+        predictor.Text = ""
+        command:CaptureFocus()
+    end
+end)
+
+command:GetPropertyChangedSignal("Text"):Connect(function()
+    local input = command.Text
+    local cmdName = input:match("^%S+") or ""
+    local suggestion = ""
+
+    if input ~= "" then
+        local bestMatch = nil
+        for key, data in pairs(commandListData) do
+            if key:sub(1, #cmdName) == cmdName:lower() then
+                if not bestMatch or key < bestMatch.key then
+                    bestMatch = { key = key, data = data }
+                end
+            end
+        end
+
+        if bestMatch then
+            local completion = bestMatch.key:sub(#cmdName + 1)
+            suggestion = input .. completion
+        end
+    end
+
+    predictor.Text = suggestion
+end)
+
+command.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local inputText = command.Text
+        local cmdName, argsText = inputText:match("^(%S+)%s*(.*)$")
+        if not cmdName then return end
+
+        local cmd = commandListData[cmdName:lower()]
+        if cmd then
+            local args = {}
+            for arg in argsText:gmatch("%S+") do
+                table.insert(args, arg)
+            end
+            cmd.Execute(unpack(args))
+        end
+
+        command.Text = ""
+        predictor.Text = ""
+    end
+end)
+--#inputsEnd
+
+--#utils
+local HttpService = game:GetService("HttpService")
+local configFile = "unexpected_config.json"
+local versionURL = "https://raw.githubusercontent.com/hashed-cmd/unexpected/refs/heads/main/version"
+local defaultConfig = {
+    keepUX = true
+}
+
+function UX_rconfig()
+    if not isfile(configFile) then
+        for key, value in pairs(defaultConfig) do
+            getgenv()[key] = value
+        end
+
+        local defaultJSON = HttpService:JSONEncode(defaultConfig)
+        writefile(configFile, defaultJSON)
+    else
+        local success, content = pcall(readfile, configFile)
+        if success and content then
+            local parsed = HttpService:JSONDecode(content)
+            for key, value in pairs(defaultConfig) do
+                getgenv()[key] = parsed[key] ~= nil and parsed[key] or value
+            end
+        end
+    end
+end
+
+function UX_config()
+    local currentConfig = {}
+    for key, _ in pairs(defaultConfig) do
+        currentConfig[key] = getgenv()[key]
+    end
+    local content = HttpService:JSONEncode(currentConfig)
+    pcall(writefile, configFile, content)
+end
+
+function UX_version()
+    local success, result = pcall(function()
+        local response = game:HttpGet(versionURL)
+        return HttpService:JSONDecode(response)
+    end)
+    if success and result.version and result.version ~= currentVersion then
+        unexpected:notify("unexpected", "Wrong version, you are on v"..currentVersion.." when it is supposed to be v"..result.version)
+        if result.shout then
+            unexpected:notify("unexpected", result.shout)
+        end
+    end
+end
+
+UX_rconfig()
+UX_version()
+--#utilsEnd
+
+
+--#commands
+unexpected:AddCommand("print", "Prints all arguments", function(...) 
+    print(...) 
+end, {"echo", "say"}, {"..."})
+
+unexpected:AddCommand("notify", "Notify all arguments", function(...) 
+    unexpected:notify("unexpected", ...)
+end, nil, {"..."})
+
+unexpected:AddCommand("cmds", "Shows commands", function() 
+    commandlist.Visible = not commandlist.Visible 
+end)
+
+unexpected:AddCommand("rejoin", "Rejoins the current server", function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, LP)
+end)
+
+unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", function(state)
+    state = tostring(state):lower()
+    if state == "true" then
+        getgenv().keepUX = true
+    elseif state == "false" then
+        getgenv().keepUX = false
+    end
+    UX_config()
+end, nil, {"true/false"})
+
+--#locales
+local tpCHECK = false
+LP.OnTeleport:Connect(function(State)
+    if keepUX and not tpCHECK and queueteleport then
+        tpCHECK = true
+        queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/hashed-cmd/unexpected/refs/heads/main/source'))()")
+    end
+end)
+--#localesEnd
