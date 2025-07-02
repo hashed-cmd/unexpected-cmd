@@ -106,7 +106,6 @@ commandexample.TextXAlignment = Enum.TextXAlignment.Left
 commandexample.Visible = false
 
 local unexpected = {}
-local keepUX = false
 local commandListData = {}
 local index = 0
 
