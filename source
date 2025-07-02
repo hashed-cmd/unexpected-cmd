@@ -405,6 +405,75 @@ UX_version()
 
 
 --#commands
+
+unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
+    local target = PLRS:FindFirstChild(targetName)
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+        else
+            unexpected:notify("goto", "Your character is missing a HumanoidRootPart.")
+        end
+    else
+        unexpected:notify("goto", "Player or character not found.")
+    end
+end, nil, {"playerName"})
+
+unexpected:AddCommand("walkspeed", "Set your walkspeed", function(speed)
+    speed = tonumber(speed)
+    if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+        LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = speed or 16
+    end
+end, nil, {"speed"})
+
+unexpected:AddCommand("jumppower", "Set your jumppower", function(power)
+    power = tonumber(power)
+    if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+        LP.Character:FindFirstChildOfClass("Humanoid").JumpPower = power or 50
+    end
+end, nil, {"power"})
+
+unexpected:AddCommand("sit", "Makes your character sit", function()
+    local human = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if human then
+        human.Sit = true
+    else
+        unexpected:notify("sit", "Humanoid not found.")
+    end
+end)
+
+local spinning = false
+local spinConnection
+
+unexpected:AddCommand("spin", "Spin your character", function(speed)
+    speed = tonumber(speed) or 5
+    if spinning then
+        unexpected:notify("spin", "You're already spinning.")
+        return
+    end
+
+    local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        spinning = true
+        spinConnection = RS.Heartbeat:Connect(function()
+            if hrp and spinning then
+                hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speed), 0)
+            end
+        end)
+    else
+        unexpected:notify("spin", "HumanoidRootPart not found.")
+    end
+end, nil, {"speed"})
+
+unexpected:AddCommand("unspin", "Stop spinning your character", function()
+    if spinConnection then
+        spinConnection:Disconnect()
+        spinConnection = nil
+    end
+    spinning = false
+end)
+
 unexpected:AddCommand("print", "Prints all arguments", function(...) 
     print(...) 
 end, {"echo", "say"}, {"..."})
