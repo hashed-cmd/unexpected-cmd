@@ -607,10 +607,28 @@ end)
 unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
     local target
 
-    for _, player in pairs(PLRS:GetPlayers()) do
-        if player.DisplayName:lower() == targetName:lower() or player.Name:lower() == targetName:lower() then
-            target = player
-            break
+    if targetName:lower() == "random" then
+        local players = PLRS:GetPlayers()
+        local candidates = {}
+
+        for _, player in pairs(players) do
+            if player ~= LP then
+                table.insert(candidates, player)
+            end
+        end
+
+        if #candidates > 0 then
+            target = candidates[math.random(#candidates)]
+        else 
+            target = nil 
+            unexpected:notify("goto", "No players available, try again.")
+        end
+    else
+        for _, player in pairs(PLRS:GetPlayers()) do
+            if player.DisplayName:lower() == targetName:lower() or player.Name:lower() == targetName:lower() then
+                target = player
+                break
+            end
         end
     end
 
@@ -623,6 +641,32 @@ unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
     end
 end, nil, {"playerName"})
 
+
+local noclip
+unexpected:AddCommand("noclip", "Walk through walls", function()
+	if noclip then return end
+	noclip = RS.Stepped:Connect(function()
+		local char = LP.Character
+		if char then
+			for _, p in ipairs(char:GetDescendants()) do
+				if p:IsA("BasePart") then p.CanCollide = false end
+			end
+		end
+	end)
+end)
+
+unexpected:AddCommand("unnoclip", "Disable noclip", function()
+	if noclip then
+		noclip:Disconnect()
+		noclip = nil
+	end
+	local char = LP.Character
+	if char then
+		for _, p in ipairs(char:GetDescendants()) do
+			if p:IsA("BasePart") then p.CanCollide = true end
+		end
+	end
+end, {"clip"}, nil)
 
 unexpected:AddCommand("reset", "Resets your character", function()
     local char = LP.Character
@@ -991,6 +1035,59 @@ end)
 
 unexpected:AddCommand("unantifling", "Disables fling protection", function()
 	if afConn then afConn:Disconnect() afConn = nil end
+end)
+
+
+local banging = false
+local conn
+
+unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
+    if banging then return end
+
+    local target
+    for _, p in pairs(PLRS:GetPlayers()) do
+        if p.DisplayName:lower() == name:lower() or p.Name:lower() == name:lower() then
+            target = p
+            break
+        end
+    end
+    if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
+
+    local char = LP.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+
+    local speed = tonumber(speedArg) or 5
+
+    banging = true
+    local hrp = char.HumanoidRootPart
+    local thrp = target.Character.HumanoidRootPart
+    local backDist, fwdDist = 2, 1
+    local t, inwards = 0, true
+
+    conn = game:GetService("RunService").Heartbeat:Connect(function(dt)
+        if not banging then
+            conn:Disconnect()
+            conn = nil
+            return
+        end
+        local cf, lv = thrp.CFrame, thrp.CFrame.LookVector.Unit
+        local backPos = cf.Position - lv * backDist
+        local inPos = cf.Position - lv * (backDist - fwdDist)
+        local backCf = CFrame.new(backPos, cf.Position)
+        local inCf = CFrame.new(inPos, cf.Position)
+
+        t = math.min(t + dt * speed, 1)
+        hrp.CFrame = hrp.CFrame:Lerp(inwards and inCf or backCf, t)
+        if t >= 1 then
+            inwards = not inwards
+            t = 0
+        end
+    end)
+end, nil, {"playerName", "speed"})
+
+unexpected:AddCommand("unbang", "Stop banging", function()
+    banging = false
+    if conn then conn:Disconnect() conn = nil end
 end)
 
 --#locales
