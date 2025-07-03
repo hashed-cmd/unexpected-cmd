@@ -33,8 +33,7 @@ HUM = cloneref(CHAR:WaitForChild("Humanoid")) -- Rather do this than call a func
 HRP = cloneref(CHAR:WaitForChild("HumanoidRootPart"))
 --#importFuncsEnd
 
-local currentVersion = "1.3"
-
+local currentVersion = "1.4"
 local function randomString(length, charset)
 	length = length or math.random(10, 20)
 	charset = charset or "abcdefghijklmnopqRStuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -118,7 +117,6 @@ commandexample.Visible = false
 local unexpected = {}
 local commandListData = {}
 local index = 0
-
 function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	aliases = aliases or {}
 	usageArgs = usageArgs or {}
@@ -211,7 +209,6 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	index += 1
 	scrollinglist.CanvasSize = UDim2.new(0, 0, 0, index * 32)
 end
-
 
 --#notification
 local notificationQueue = {}
@@ -459,8 +456,6 @@ local function updateList(filter)
 	end
 end
 
-
-
 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
 	updateList(searchBox.Text)
 end)
@@ -525,14 +520,19 @@ local isVisible = false
 local fadeTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 local indicatorCircle = Instance.new("Frame")
-indicatorCircle.Size = UDim2.new(0, 10, 0, 10)
-indicatorCircle.Position = UDim2.new(1, -14, 1, -14)
+indicatorCircle.Size = MOBILE and UDim2.new(0, 32, 0, 32) or UDim2.new(0, 10, 0, 10)
+indicatorCircle.Position = UDim2.new(1, -40, 1, -40)
 indicatorCircle.AnchorPoint = Vector2.new(1, 1)
 indicatorCircle.BackgroundColor3 = Color3.fromRGB(0, 85, 198)
 indicatorCircle.BorderSizePixel = 0
 indicatorCircle.Visible = true
 indicatorCircle.ZIndex = 999
 indicatorCircle.Parent = gui
+indicatorCircle.BackgroundTransparency = 0.1
+indicatorCircle.Name = "MobileIndicator"
+indicatorCircle.ClipsDescendants = true
+indicatorCircle.Active = true
+Instance.new("UICorner", indicatorCircle)
 
 local function fadeUI(show)
 	isVisible = show
@@ -564,6 +564,50 @@ local function fadeUI(show)
 	end
 end
 
+local dragging, dragInput, dragStart, startPos
+indicatorCircle.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = indicatorCircle.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+indicatorCircle.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+indicatorCircle.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		fadeUI(true)
+		task.delay(10, function()
+			if not command:IsFocused() then
+				fadeUI(false)
+			end
+		end)
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		indicatorCircle.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
 UIS.InputBegan:Connect(function(input, processed)
 	if not processed and input.KeyCode == Enum.KeyCode.Semicolon then
 		command:CaptureFocus()
@@ -578,7 +622,6 @@ local lastFocusLost = 0
 
 command.FocusLost:Connect(function()
 	lastFocusLost = tick()
-
 	task.delay(2, function()
 		if tick() - lastFocusLost >= 1.95 then
 			if not command:IsFocused() and command.Text == "" then
