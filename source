@@ -95,8 +95,8 @@ header.TextXAlignment = Enum.TextXAlignment.Left
 local scrollinglist = Instance.new("ScrollingFrame", commandlist)
 scrollinglist.Active = true
 scrollinglist.BackgroundTransparency = 1
-scrollinglist.Position = UDim2.new(0.05, 0, 0.168, 0)
-scrollinglist.Size = UDim2.new(0, 286, 0, 221)
+scrollinglist.Position = UDim2.new(0.05, 0,0.312, 0)
+scrollinglist.Size = UDim2.new(0, 286,0, 180)
 scrollinglist.ScrollBarThickness = 0
 scrollinglist.CanvasSize = UDim2.new()
 
@@ -230,6 +230,12 @@ notifUI.Size = UDim2.new(0, 208, 0, 169)
 notifUI.Visible = false
 notifUI.Parent = gui
 
+local notifStroke = Instance.new("UIStroke")
+notifStroke.Color = Color3.fromRGB(60, 60, 60)
+notifStroke.Thickness = 1
+notifStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+notifStroke.Parent = notifUI
+
 local notiftitle = Instance.new("TextLabel", notifUI)
 notiftitle.Name = "notiftitle"
 notiftitle.BackgroundTransparency = 1
@@ -261,8 +267,6 @@ loadingBar.Position = UDim2.new(0, 0, 1, -4)
 loadingBar.Size = UDim2.new(1, 0, 0, 4)
 loadingBar.AnchorPoint = Vector2.new(0, 1)
 
-
-
 function unexpected:notify(title, ...)
     local args = {...}
     local text = table.concat(args, " ")
@@ -281,13 +285,14 @@ function unexpected:notify(title, ...)
     end
 end
 
+local notifPos = notifUI.Position
 function notifQueue()
 	if #notificationQueue == 0 then
 		isNotif = false
 
 		local fadeOutTween = TS:Create(notifUI, TweenInfo.new(0.25), {
 			BackgroundTransparency = 1,
-			Position = notifUI.Position + UDim2.new(0, 0, 0, 10),
+			Position = notifPos + UDim2.new(0, 0, 0, 10),
 		})
 		for _, v in ipairs(notifUI:GetDescendants()) do
 			if v:IsA("TextLabel") then
@@ -304,7 +309,7 @@ function notifQueue()
 					v.TextTransparency = 0
 				end
 			end
-			notifUI.Position = notifUI.Position - UDim2.new(0, 0, 0, 10)
+			notifUI.Position = notifPos -- ← reset cleanly
 		end)
 		return
 	end
@@ -328,7 +333,7 @@ function notifQueue()
 
 		TS:Create(notifUI, TweenInfo.new(0.25), {
 			BackgroundTransparency = 0,
-			Position = notifUI.Position - UDim2.new(0, 0, 0, 10),
+			Position = notifPos,
 		}):Play()
 		for _, v in ipairs(notifUI:GetDescendants()) do
 			if v:IsA("TextLabel") then
@@ -400,6 +405,74 @@ command.FocusLost:Connect(function(enterPressed)
     end
 end)
 --#inputsEnd
+
+--#search
+local search = Instance.new("Frame")
+local searchBox = Instance.new("TextBox")
+
+search.Name = "search"
+search.Parent = commandlist
+search.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+search.BorderColor3 = Color3.fromRGB(0, 0, 0)
+search.BorderSizePixel = 0
+search.Position = UDim2.new(0.550314486, -159, 1.76491225, -455)
+search.Size = UDim2.new(0, 286, 0, 31)
+search.Parent = commandlist
+
+local sStroke = Instance.new("UIStroke")
+sStroke.Color = Color3.fromRGB(60, 60, 60)
+sStroke.Thickness = 1
+sStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+sStroke.Parent = search
+
+searchBox.Parent = search
+searchBox.BackgroundColor3 = Color3.fromRGB(9, 9, 9)
+searchBox.BackgroundTransparency = 1
+searchBox.BorderSizePixel = 0
+searchBox.Position = UDim2.new(0.0471699312, 0, 0, 0)
+searchBox.Size = UDim2.new(0, 260, 0, 30)
+searchBox.Font = Enum.Font.Gotham
+searchBox.PlaceholderText = "Search a command"
+searchBox.Text = ""
+searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+searchBox.TextSize = 14
+searchBox.TextXAlignment = Enum.TextXAlignment.Left
+
+local function updateList(filter)
+	filter = filter:lower()
+	local all, visible = {}, {}
+
+	for _, c in ipairs(scrollinglist:GetChildren()) do
+		if c:IsA("TextButton") then
+			table.insert(all, c)
+			if c.Visible then table.insert(visible, c) end
+		end
+	end
+
+	if filter == "" then
+		for i, btn in ipairs(all) do
+			btn.Position = UDim2.new(0, 0, 0, (i - 1) * 32)
+		end
+		return
+	end
+
+	table.sort(visible, function(a, b)
+		local am = a.Text:lower():find(filter) and 1 or 0
+		local bm = b.Text:lower():find(filter) and 1 or 0
+		return am > bm or (am == bm and a.Text < b.Text)
+	end)
+
+	for i, btn in ipairs(visible) do
+		btn.Position = UDim2.new(0, 0, 0, (i - 1) * 32)
+	end
+end
+
+
+
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+	updateList(searchBox.Text)
+end)
+--#searchEnd
 
 --#utils
 local configFile = "unexpected_config.json"
@@ -530,7 +603,6 @@ command.Focused:Connect(function()
 end)
 --#uiTogglesEnd
 
-
 --#commands
 unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
     local target
@@ -625,7 +697,8 @@ unexpected:AddCommand("unglide", "Disable glide mode", function()
 end)
 
 unexpected:AddCommand("iceslide", "Slide around with low friction", function()
-    for _, part in ipairs(LP.Character:GetDescendants()) do
+    local char = LP.Character
+    for _, part in ipairs(char:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.3, 0.5)
         end
@@ -633,7 +706,8 @@ unexpected:AddCommand("iceslide", "Slide around with low friction", function()
 end)
 
 unexpected:AddCommand("uniceslide", "Restore normal walking friction", function()
-    for _, part in ipairs(LP.Character:GetDescendants()) do
+    local char = LP.Character
+    for _, part in ipairs(char:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 0.5)
         end
@@ -783,26 +857,24 @@ unexpected:AddCommand("cmds", "Shows commands", function()
 	local showing = not commandlist.Visible
 	commandlist.Visible = true
 
-	local targetTransparency = showing and 0 or 1
-	local targetOffset = showing and 0 or 10
+	local t = showing and 0 or 1
+	local offset = showing and -10 or 10
 
 	for _, obj in ipairs(commandlist:GetDescendants()) do
-		if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then
-			if pcall(function() return obj.TextTransparency end) then
-				TS:Create(obj, TweenInfo.new(0.25), {
-					TextTransparency = targetTransparency
-				}):Play()
-			end
+		if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+			pcall(function()
+				TS:Create(obj, TweenInfo.new(0.25), {TextTransparency = t}):Play()
+			end)
 		elseif obj:IsA("UIStroke") then
-			TS:Create(obj, TweenInfo.new(0.25), {
-				Transparency = targetTransparency
-			}):Play()
+			TS:Create(obj, TweenInfo.new(0.25), {Transparency = t}):Play()
+		elseif obj:IsA("Frame") then
+			TS:Create(obj, TweenInfo.new(0.25), {BackgroundTransparency = t}):Play()
 		end
 	end
 
 	TS:Create(commandlist, TweenInfo.new(0.25), {
-		BackgroundTransparency = targetTransparency,
-		Position = commandlist.Position + UDim2.new(0, 0, 0, showing and -10 or 10)
+		BackgroundTransparency = t,
+		Position = commandlist.Position + UDim2.new(0, 0, 0, offset)
 	}):Play()
 
 	if not showing then
