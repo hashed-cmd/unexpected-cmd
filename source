@@ -25,7 +25,7 @@ TPS = cloneref(game:GetService("TeleportService"))
 WS = cloneref(game:GetService("Workspace"))
 --#importsEnd
 
-local currentVersion = "1"
+local currentVersion = "1.2"
 
 local function randomString(length, charset)
 	length = length or math.random(10, 20)
