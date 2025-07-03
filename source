@@ -1099,7 +1099,7 @@ end)
 
 unexpected:AddCommand("execute", "Execute code", function(...)
     loadstring(...)()
-end, nil {...})
+end, nil, {...})
 
 
 --#locales
