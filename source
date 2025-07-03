@@ -1,5 +1,4 @@
 if unexpected_LOAD then return end
-
 pcall(function() getgenv().unexpected_LOAD = true end)
 
 function missing(t, f, fallback)
@@ -24,6 +23,8 @@ HS = cloneref(game:GetService("HttpService"))
 TPS = cloneref(game:GetService("TeleportService"))
 WS = cloneref(game:GetService("Workspace"))
 VU = cloneref(game:GetService("VirtualUser"))
+CAM = cloneref(WS.CurrentCamera)
+MOBILE = UIS.TouchEnabled -- I do think theres a better way of doing this
 --#importsEnd
 
 --#importFuncs
@@ -54,7 +55,6 @@ local commandbar = Instance.new("Frame", gui)
 commandbar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 commandbar.Position = UDim2.new(0.5, -159, 1, -160)
 commandbar.Size = UDim2.new(0, 318, 0, 60)
-
 Instance.new("UIStroke", commandbar).Color = Color3.fromRGB(60, 60, 60)
 
 local predictor = Instance.new("TextLabel", commandbar)
@@ -86,7 +86,6 @@ commandlist.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 commandlist.Position = UDim2.new(0.5, -159,1, -455)
 commandlist.Size = UDim2.new(0, 318, 0, 285)
 commandlist.Visible = false
-
 Instance.new("UIStroke", commandlist).Color = Color3.fromRGB(60, 60, 60)
 
 local header = Instance.new("TextLabel", commandlist)
@@ -141,18 +140,14 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 
 	local btn = commandexample:Clone()
 	local allNames = {displayName}
-	for _, alias in ipairs(aliases) do
-		table.insert(allNames, alias)
-	end
+	for _, alias in ipairs(aliases) do table.insert(allNames, alias) end
 	btn.Text = table.concat(allNames, " / ")
 	btn.Visible = true
 	btn.Position = UDim2.new(0, 0, 0, index * 32)
 	btn.Parent = scrollinglist
 
 	local usage = "usage: " .. actualName
-	if #usageArgs > 0 then
-		usage = usage .. " [" .. table.concat(usageArgs, "] [") .. "]"
-	end
+	if #usageArgs > 0 then usage = usage .. " [" .. table.concat(usageArgs, "] [") .. "]" end
 
 	local tooltip = Instance.new("TextLabel")
 	tooltip.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -168,12 +163,7 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	tooltip.Size = UDim2.new(0, 300, 0, 0)
 	tooltip.Parent = gui
 	tooltip.BorderSizePixel = 0
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(60, 60, 60)
-	stroke.Thickness = 1
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Parent = tooltip
+	Instance.new("UIStroke", tooltip).Color = Color3.fromRGB(60, 60, 60)
 
 	local padding = Instance.new("UIPadding", tooltip)
 	padding.PaddingTop = UDim.new(0, 6)
@@ -236,12 +226,7 @@ notifUI.Position = UDim2.new(0.5, 170, 1, -100)
 notifUI.Size = UDim2.new(0, 208, 0, 169)
 notifUI.Visible = false
 notifUI.Parent = gui
-
-local notifStroke = Instance.new("UIStroke")
-notifStroke.Color = Color3.fromRGB(60, 60, 60)
-notifStroke.Thickness = 1
-notifStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-notifStroke.Parent = notifUI
+Instance.new("UIStroke", notifUI).Color = Color3.fromRGB(60, 60, 60)
 
 local notiftitle = Instance.new("TextLabel", notifUI)
 notiftitle.Name = "notiftitle"
@@ -863,59 +848,72 @@ end, nil, {"true/false"})
 
 local flying, flyConnA, flyConnB = false, nil, nil
 unexpected:AddCommand("fly", "Enable flying", function(spd)
-    if flying then unexpected:notify("flying", "Unfly first before changing speed") end
-    spd = tonumber(spd) or 3
+    if flying then return unexpected:notify("flying", "Unfly first before changing speed") end
+    
+    local spd = tonumber(spd) or 3
     flying = true
     HUM.PlatformStand = true
-
-    local bv = Instance.new("BodyVelocity", HRP)
-    local bg = Instance.new("BodyGyro", HRP)
+    bv = Instance.new("BodyVelocity", HRP)
+    bg = Instance.new("BodyGyro", HRP)
     bv.MaxForce = Vector3.one * 1e6
     bg.MaxTorque = Vector3.one * 1e6
     bg.P = 1e4
-
-    local cam = workspace.CurrentCamera
     local input = {w = 0, s = 0, a = 0, d = 0, up = 0, down = 0}
-
-    flyConnA = UIS.InputBegan:Connect(function(i, g)
-        if g then return end
-        local k = i.KeyCode
-        if k == Enum.KeyCode.W then input.w = 1 end
-        if k == Enum.KeyCode.S then input.s = -1 end
-        if k == Enum.KeyCode.A then input.a = -1 end
-        if k == Enum.KeyCode.D then input.d = 1 end
-        if k == Enum.KeyCode.Space then input.up = 1 end
-        if k == Enum.KeyCode.LeftShift then input.down = -1 end
-    end)
-
-    flyConnB = UIS.InputEnded:Connect(function(i)
-        local k = i.KeyCode
-        if k == Enum.KeyCode.W then input.w = 0 end
-        if k == Enum.KeyCode.S then input.s = 0 end
-        if k == Enum.KeyCode.A then input.a = 0 end
-        if k == Enum.KeyCode.D then input.d = 0 end
-        if k == Enum.KeyCode.Space then input.up = 0 end
-        if k == Enum.KeyCode.LeftShift then input.down = 0 end
-    end)
-
-    while flying and HRP and cam do
-        task.wait()
-        local move = cam.CFrame:VectorToWorldSpace(Vector3.new(input.a + input.d, input.up + input.down, -(input.w + input.s))) * spd * 10
-        bv.Velocity = move
-        bg.CFrame = cam.CFrame
-        HUM:ChangeState(Enum.HumanoidStateType.FallingDown)
+    if MOBILE then
+    	HUM.StateChanged:Connect(function(_, state)
+    		if state == Enum.HumanoidStateType.Jumping then
+    			input.up = 1
+    			task.delay(0.3, function() input.up = 0 end)
+    		end
+    	end)
+    else
+    	flyConnA = UIS.InputBegan:Connect(function(i, g)
+    		if g then return end
+    		local k = i.KeyCode
+    		if k == Enum.KeyCode.W then input.w = 1 end
+    		if k == Enum.KeyCode.S then input.s = -1 end
+    		if k == Enum.KeyCode.A then input.a = -1 end
+    		if k == Enum.KeyCode.D then input.d = 1 end
+    		if k == Enum.KeyCode.Space then input.up = 1 end
+    		if k == Enum.KeyCode.LeftShift then input.down = -1 end
+    	end)
+    
+    	flyConnB = UIS.InputEnded:Connect(function(i)
+    		local k = i.KeyCode
+    		if k == Enum.KeyCode.W then input.w = 0 end
+    		if k == Enum.KeyCode.S then input.s = 0 end
+    		if k == Enum.KeyCode.A then input.a = 0 end
+    		if k == Enum.KeyCode.D then input.d = 0 end
+    		if k == Enum.KeyCode.Space then input.up = 0 end
+    		if k == Enum.KeyCode.LeftShift then input.down = 0 end
+    	end)
     end
 
-    bv:Destroy()
-    bg:Destroy()
+    task.spawn(function()
+    	while flying and HRP and CAM do
+    		task.wait()
+    		local moveVec
+    		if MOBILE then
+    			local dir = CAM.CFrame.LookVector
+    			local move = HUM.MoveDirection + Vector3.new(0, input.up, 0)
+    			moveVec = move.Magnitude > 0 and CFrame.new(Vector3.zero, dir):VectorToWorldSpace(move.Unit) * spd * 10 or Vector3.zero
+    		else
+    			local move = Vector3.new(input.a + input.d, input.up + input.down, -(input.w + input.s))
+    			moveVec = CAM.CFrame:VectorToWorldSpace(move) * spd * 10
+    		end
+    		bv.Velocity = moveVec
+    		bg.CFrame = CAM.CFrame
+    		HUM:ChangeState(Enum.HumanoidStateType.FallingDown)
+    	end
+    end)
 end, nil, {"speed"})
 
 unexpected:AddCommand("unfly", "Disable flying", function()
     flying = false
-    if flyConnA then flyConnA:Disconnect() end
-    if flyConnB then flyConnB:Disconnect() end
     HUM.PlatformStand = false
-    task.wait(0.1)
+    for _, x in ipairs({flyConnA, flyConnB}) do if x then pcall(function() x:Disconnect() end) end end
+    for _, x in ipairs({bv, bg}) do if x then pcall(function() x:Destroy() end) end end
+    task.wait()
     HUM:ChangeState(Enum.HumanoidStateType.Jumping)
 end)
 
