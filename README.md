@@ -2,7 +2,7 @@
 # unexpected
 An open source Roblox admin commands script [Discord](https://discord.gg/NS76jUAZE2)
 ```lua
-loadstring(game:HttpGet('https://raw.githubusercontent.com/hashed-cmd/unexpected/refs/heads/main/source'))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/source",true))()
 ```
 This is heavily inspired by *[Infinite Yield](https://github.com/EdgeIY/infiniteyield/tree/master)*, not a Fork but taken inspiration from.
 
