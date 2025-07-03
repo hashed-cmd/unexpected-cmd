@@ -23,6 +23,7 @@ TS = cloneref(game:GetService("TweenService"))
 HS = cloneref(game:GetService("HttpService"))
 TPS = cloneref(game:GetService("TeleportService"))
 WS = cloneref(game:GetService("Workspace"))
+VU = cloneref(game:GetService("VirtualUser"))
 --#importsEnd
 
 local currentVersion = "1.2"
@@ -1090,6 +1091,17 @@ unexpected:AddCommand("unbang", "Stop banging", function()
     if conn then conn:Disconnect() conn = nil end
 end)
 
+unexpected:AddCommand("antiafk", "Never get kicked", function()
+    LP.Idled:Connect(function()
+        VU:ClickButton2(Vector2.new())
+    end)
+end)
+
+unexpected:AddCommand("execute", "Execute code", function(...)
+    loadstring(...)()
+end, nil {...})
+
+
 --#locales
 UX_rconfig()
 
@@ -1097,7 +1109,7 @@ local tpCHECK = false
 LP.OnTeleport:Connect(function(State)
 	if getgenv().keepUX and not tpCHECK and queueteleport then
 		tpCHECK = true
-		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/hashed-cmd/unexpected/refs/heads/main/source'))()")
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/source'))()")
 	end
 end)
 --#localesEnd
