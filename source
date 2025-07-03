@@ -26,7 +26,13 @@ WS = cloneref(game:GetService("Workspace"))
 VU = cloneref(game:GetService("VirtualUser"))
 --#importsEnd
 
-local currentVersion = "1.2"
+--#importFuncs
+CHAR = LP.Character or LP.CharacterAdded:Wait() 
+HUM = cloneref(CHAR:WaitForChild("Humanoid")) -- Rather do this than call a function everytime
+HRP = cloneref(CHAR:WaitForChild("HumanoidRootPart"))
+--#importFuncsEnd
+
+local currentVersion = "1.3"
 
 local function randomString(length, charset)
 	length = length or math.random(10, 20)
@@ -607,22 +613,18 @@ end)
 --#commands
 unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
     local target
-
     if targetName:lower() == "random" then
         local players = PLRS:GetPlayers()
         local candidates = {}
-
         for _, player in pairs(players) do
             if player ~= LP then
                 table.insert(candidates, player)
             end
         end
-
         if #candidates > 0 then
             target = candidates[math.random(#candidates)]
-        else 
-            target = nil 
-            unexpected:notify("goto", "No players available, try again.")
+        else
+            return unexpected:notify("goto", "No players available, try again.")
         end
     else
         for _, player in pairs(PLRS:GetPlayers()) do
@@ -632,118 +634,81 @@ unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
             end
         end
     end
-
     if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        local char = LP.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-        end
+        HRP.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
     end
 end, nil, {"playerName"})
 
-
 local noclip
 unexpected:AddCommand("noclip", "Walk through walls", function()
-	if noclip then return end
-	noclip = RS.Stepped:Connect(function()
-		local char = LP.Character
-		if char then
-			for _, p in ipairs(char:GetDescendants()) do
-				if p:IsA("BasePart") then p.CanCollide = false end
-			end
-		end
-	end)
+    if noclip then return unexpected:notify("noclip", "Already noclipping.") end
+    noclip = RS.Stepped:Connect(function()
+        for _, p in ipairs(CHAR:GetDescendants()) do
+            if p:IsA("BasePart") then p.CanCollide = false end
+        end
+    end)
 end)
 
 unexpected:AddCommand("unnoclip", "Disable noclip", function()
-	if noclip then
-		noclip:Disconnect()
-		noclip = nil
-	end
-	local char = LP.Character
-	if char then
-		for _, p in ipairs(char:GetDescendants()) do
-			if p:IsA("BasePart") then p.CanCollide = true end
-		end
-	end
+    if noclip then
+        noclip:Disconnect()
+        noclip = nil
+    end
+    for _, p in ipairs(CHAR:GetDescendants()) do
+        if p:IsA("BasePart") then p.CanCollide = true end
+    end
 end, {"clip"}, nil)
 
 unexpected:AddCommand("reset", "Resets your character", function()
-    local char = LP.Character
-    char:BreakJoints()
+    CHAR:BreakJoints()
 end)
 
 unexpected:AddCommand("clearhats", "Removes all hats", function()
-    local char = LP.Character
-    if char then
-        for _, item in ipairs(char:GetChildren()) do
-            if item:IsA("Accessory") then
-                item:Destroy()
-            end
+    for _, item in ipairs(CHAR:GetChildren()) do
+        if item:IsA("Accessory") then
+            item:Destroy()
         end
     end
 end)
 
 unexpected:AddCommand("pos", "Prints your position", function()
-    local char = LP.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        unexpected:notify("position", tostring(hrp.Position))
-    end
+    unexpected:notify("position", tostring(HRP.Position))
 end)
 
 unexpected:AddCommand("platformstand", "Toggles PlatformStand", function()
-    local char = LP.Character
-    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.PlatformStand = not humanoid.PlatformStand
-    end
+    HUM.PlatformStand = not HUM.PlatformStand
 end)
 
 unexpected:AddCommand("resetcam", "Resets the camera to your character", function()
-    local char = LP.Character
-    WS.CurrentCamera.CameraSubject = char and char:FindFirstChild("Humanoid")
+    WS.CurrentCamera.CameraSubject = HUM
 end)
 
 unexpected:AddCommand("flip", "Flips your character upside down", function()
-    local char = LP.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        hrp.CFrame = hrp.CFrame * CFrame.Angles(math.pi, 0, 0)
+    if HRP then
+        HRP.CFrame = HRP.CFrame * CFrame.Angles(math.pi, 0, 0)
     end
 end)
 
 unexpected:AddCommand("glide", "Enable glide mode (slow fall)", function()
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.JumpPower = 0
-        hum.AutoRotate = false
-        local sv = Instance.new("BodyVelocity", hum.RootPart or LP.Character.PrimaryPart)
-        sv.Name = "GlideVelocity"
-        sv.MaxForce = Vector3.new(0, 10000, 0)
-        sv.Velocity = Vector3.new(0, -10, 0)
-    end
-end, nil, {})
+    HUM.JumpPower = 0
+    HUM.AutoRotate = false
+    local sv = Instance.new("BodyVelocity")
+    sv.Name = "GlideVelocity"
+    sv.MaxForce = Vector3.new(0, 10000, 0)
+    sv.Velocity = Vector3.new(0, -10, 0)
+    sv.Parent = HRP or CHAR.PrimaryPart
+end)
+
 
 unexpected:AddCommand("unglide", "Disable glide mode", function()
-    local char = LP.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    if root then
-        local vel = root:FindFirstChild("GlideVelocity")
-        if vel then vel:Destroy() end
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum.JumpPower = 50
-            hum.AutoRotate = true
-        end
-    end
+    local glide = HRP:FindFirstChild("GlideVelocity")
+    if glide then glide:Destroy() end
+    HUM.JumpPower = 50
+    HUM.AutoRotate = true
 end)
 
 unexpected:AddCommand("iceslide", "Slide around with low friction", function()
-    local char = LP.Character
-    for _, part in ipairs(char:GetDescendants()) do
+    for _, part in ipairs(CHAR:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.3, 0.5)
         end
@@ -751,71 +716,43 @@ unexpected:AddCommand("iceslide", "Slide around with low friction", function()
 end)
 
 unexpected:AddCommand("uniceslide", "Restore normal walking friction", function()
-    local char = LP.Character
-    for _, part in ipairs(char:GetDescendants()) do
+    for _, part in ipairs(CHAR:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 0.5)
         end
     end
 end)
 
-
 unexpected:AddCommand("walkspeed", "Set your walkspeed", function(speed)
-    speed = tonumber(speed)
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = speed or 16
-    end
+    HUM.WalkSpeed = tonumber(speed) or 16
 end, nil, {"speed"})
 
 unexpected:AddCommand("jumppower", "Set your jumppower", function(power)
-    power = tonumber(power)
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        LP.Character:FindFirstChildOfClass("Humanoid").JumpPower = power or 50
-    end
+    HUM.JumpPower = tonumber(power) or 50
 end, nil, {"power"})
 
 unexpected:AddCommand("sit", "Force sit", function()
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.Sit = true
-    end
+    HUM.Sit = true
 end)
 
 unexpected:AddCommand("stand", "Force stand", function()
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.Sit = false
-        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-    end
+    HUM.Sit = false
+    HUM:ChangeState(Enum.HumanoidStateType.GettingUp)
 end, {"unsit"}, nil)
 
-local spinning = false
-local spinConnection
-
+local spinning, spinConnection = false, nil
 unexpected:AddCommand("spin", "Spin your character", function(speed)
     speed = tonumber(speed) or 5
-    if spinning then
-        unexpected:notify("spin", "You're already spinning.")
-        return
-    end
-    local char = LP.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        spinning = true
-        spinConnection = RS.Heartbeat:Connect(function()
-            if hrp and spinning then
-                hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(speed), 0)
-            end
-        end)
-    else
-        unexpected:notify("spin", "HumanoidRootPart not found.")
-    end
+    local spinning = true
+    local connection = RS.Heartbeat:Connect(function()
+        if spinning and HRP then
+            HRP.CFrame = HRP.CFrame * CFrame.Angles(0, math.rad(speed), 0)
+        end
+    end)
+    task.delay(10, function()
+        spinning = false
+        connection:Disconnect()
+    end)
 end, nil, {"speed"})
 
 unexpected:AddCommand("unspin", "Stop spinning your character", function()
@@ -827,65 +764,42 @@ unexpected:AddCommand("unspin", "Stop spinning your character", function()
 end)
 
 unexpected:AddCommand("stun", "Freezes your character (PlatformStand)", function()
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.PlatformStand = true
-    end
+    HUM.PlatformStand = true
 end)
 
 unexpected:AddCommand("unstun", "Remove fake stun", function()
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.PlatformStand = false
-    end
+    HUM.PlatformStand = false
 end)
 
+
 unexpected:AddCommand("jump", "Forces local jump", function()
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum:ChangeState(Enum.HumanoidStateType.Jumping)
-    end
+    HUM:ChangeState(Enum.HumanoidStateType.Jumping)
 end)
 
 unexpected:AddCommand("state", "Set HumanoidState", function(args)
-    local char = LP.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
-
     local input = args[1]
     if not input then return end
-
     input = input:upper()
-
     for _, state in pairs(Enum.HumanoidStateType:GetEnumItems()) do
         if state.Name:upper() == input then
-            hum:ChangeState(state)
+            HUM:ChangeState(state)
             return
         end
     end
 end)
 
 unexpected:AddCommand("[CLIENT] freeze", "Freeze character", function()
-    local char = LP.Character
-    if char then
-        for _, p in pairs(char:GetChildren()) do
-            if p:IsA("BasePart") then
-                p.Anchored = true
-            end
+    for _, p in pairs(CHAR:GetChildren()) do
+        if p:IsA("BasePart") then
+            p.Anchored = true
         end
     end
 end)
 
 unexpected:AddCommand("[CLIENT] unfreeze", "Unfreeze your character", function()
-    local char = LP.Character
-    if char then
-        for _, p in pairs(char:GetChildren()) do
-            if p:IsA("BasePart") then
-                p.Anchored = false
-            end
+    for _, p in pairs(CHAR:GetChildren()) do
+        if p:IsA("BasePart") then
+            p.Anchored = false
         end
     end
 end)
@@ -947,104 +861,87 @@ unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", func
 	unexpected:notify("keepUX", "Now set to:", tostring(getgenv().keepUX))
 end, nil, {"true/false"})
 
--- FlyConnA is InputBegan, FlyConnA is InputEnded
 local flying, flyConnA, flyConnB = false, nil, nil
-
 unexpected:AddCommand("fly", "Enable flying", function(spd)
-	if flying then unexpected:notify("Flying", "Unfly first before changing speed") end
-	spd = tonumber(spd) or 3
-	local char = LP.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	if not hrp or not hum then return end
-	
-	flying = true
-	hum.PlatformStand = true
+    if flying then unexpected:notify("flying", "Unfly first before changing speed") end
+    spd = tonumber(spd) or 3
+    flying = true
+    HUM.PlatformStand = true
 
-	local bv = Instance.new("BodyVelocity", hrp)
-	local bg = Instance.new("BodyGyro", hrp)
-	bv.MaxForce = Vector3.one * 1e6
-	bg.MaxTorque = Vector3.one * 1e6
-	bg.P = 1e4
+    local bv = Instance.new("BodyVelocity", HRP)
+    local bg = Instance.new("BodyGyro", HRP)
+    bv.MaxForce = Vector3.one * 1e6
+    bg.MaxTorque = Vector3.one * 1e6
+    bg.P = 1e4
 
-	local cam = workspace.CurrentCamera
-	local input = {w = 0, s = 0, a = 0, d = 0, up = 0, down = 0}
+    local cam = workspace.CurrentCamera
+    local input = {w = 0, s = 0, a = 0, d = 0, up = 0, down = 0}
 
-	flyConnA = UIS.InputBegan:Connect(function(i, g)
-		if g then return end
-		local k = i.KeyCode
-		if k == Enum.KeyCode.W then input.w = 1 end
-		if k == Enum.KeyCode.S then input.s = -1 end
-		if k == Enum.KeyCode.A then input.a = -1 end
-		if k == Enum.KeyCode.D then input.d = 1 end
-		if k == Enum.KeyCode.Space then input.up = 1 end
-		if k == Enum.KeyCode.LeftShift then input.down = -1 end
-	end)
+    flyConnA = UIS.InputBegan:Connect(function(i, g)
+        if g then return end
+        local k = i.KeyCode
+        if k == Enum.KeyCode.W then input.w = 1 end
+        if k == Enum.KeyCode.S then input.s = -1 end
+        if k == Enum.KeyCode.A then input.a = -1 end
+        if k == Enum.KeyCode.D then input.d = 1 end
+        if k == Enum.KeyCode.Space then input.up = 1 end
+        if k == Enum.KeyCode.LeftShift then input.down = -1 end
+    end)
 
-	flyConnB = UIS.InputEnded:Connect(function(i)
-		local k = i.KeyCode
-		if k == Enum.KeyCode.W then input.w = 0 end
-		if k == Enum.KeyCode.S then input.s = 0 end
-		if k == Enum.KeyCode.A then input.a = 0 end
-		if k == Enum.KeyCode.D then input.d = 0 end
-		if k == Enum.KeyCode.Space then input.up = 0 end
-		if k == Enum.KeyCode.LeftShift then input.down = 0 end
-	end)
+    flyConnB = UIS.InputEnded:Connect(function(i)
+        local k = i.KeyCode
+        if k == Enum.KeyCode.W then input.w = 0 end
+        if k == Enum.KeyCode.S then input.s = 0 end
+        if k == Enum.KeyCode.A then input.a = 0 end
+        if k == Enum.KeyCode.D then input.d = 0 end
+        if k == Enum.KeyCode.Space then input.up = 0 end
+        if k == Enum.KeyCode.LeftShift then input.down = 0 end
+    end)
 
-	while flying and hrp and cam do
-		task.wait()
-		local move = cam.CFrame:VectorToWorldSpace(Vector3.new(input.a + input.d, input.up + input.down, -(input.w + input.s))) * spd * 10
-		bv.Velocity = move
-		bg.CFrame = cam.CFrame
-		hum:ChangeState(Enum.HumanoidStateType.FallingDown)
-	end
+    while flying and HRP and cam do
+        task.wait()
+        local move = cam.CFrame:VectorToWorldSpace(Vector3.new(input.a + input.d, input.up + input.down, -(input.w + input.s))) * spd * 10
+        bv.Velocity = move
+        bg.CFrame = cam.CFrame
+        HUM:ChangeState(Enum.HumanoidStateType.FallingDown)
+    end
 
-	bv:Destroy()
-	bg:Destroy()
+    bv:Destroy()
+    bg:Destroy()
 end, nil, {"speed"})
 
 unexpected:AddCommand("unfly", "Disable flying", function()
-	flying = false
-	if flyConnA then flyConnA:Disconnect() end
-	if flyConnB then flyConnB:Disconnect() end
-	local char = LP.Character
-	local hum = char and char:FindFirstChildOfClass("Humanoid")
-	hum.PlatformStand = false
-	task.wait(0.1)
-    hum:ChangeState(Enum.HumanoidStateType.Jumping)
+    flying = false
+    if flyConnA then flyConnA:Disconnect() end
+    if flyConnB then flyConnB:Disconnect() end
+    HUM.PlatformStand = false
+    task.wait(0.1)
+    HUM:ChangeState(Enum.HumanoidStateType.Jumping)
 end)
 
 local afConn, lastSafe
 unexpected:AddCommand("antifling", "Stops flings via velocity detection", function()
-	if afConn then return end
-	afConn = RS.Heartbeat:Connect(function()
-		local char = LP.Character
-		local root = char and char:FindFirstChild("HumanoidRootPart")
-		if not root then return end
-
-		local lv, av = root.AssemblyLinearVelocity, root.AssemblyAngularVelocity
-
-		if lv.Magnitude > 250 or av.Magnitude > 250 then
-			root.AssemblyLinearVelocity = Vector3.zero
-			root.AssemblyAngularVelocity = Vector3.zero
-			if lastSafe then root.CFrame = lastSafe end
-		elseif lv.Magnitude < 50 and av.Magnitude < 50 then
-			lastSafe = root.CFrame
-		end
-	end)
+    if afConn then return end
+    afConn = RS.Heartbeat:Connect(function()
+        local lv, av = HRP.AssemblyLinearVelocity, HRP.AssemblyAngularVelocity
+        if lv.Magnitude > 250 or av.Magnitude > 250 then
+            HRP.AssemblyLinearVelocity = Vector3.zero
+            HRP.AssemblyAngularVelocity = Vector3.zero
+            if lastSafe then HRP.CFrame = lastSafe end
+        elseif lv.Magnitude < 50 and av.Magnitude < 50 then
+            lastSafe = HRP.CFrame
+        end
+    end)
 end)
 
 unexpected:AddCommand("unantifling", "Disables fling protection", function()
-	if afConn then afConn:Disconnect() afConn = nil end
+    if afConn then afConn:Disconnect() afConn = nil end
 end)
-
 
 local banging = false
 local conn
-
 unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
     if banging then return end
-
     local target
     for _, p in pairs(PLRS:GetPlayers()) do
         if p.DisplayName:lower() == name:lower() or p.Name:lower() == name:lower() then
@@ -1054,18 +951,13 @@ unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
     end
     if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
 
-    local char = LP.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-
     local speed = tonumber(speedArg) or 5
-
     banging = true
-    local hrp = char.HumanoidRootPart
     local thrp = target.Character.HumanoidRootPart
     local backDist, fwdDist = 2, 1
     local t, inwards = 0, true
 
-    conn = game:GetService("RunService").Heartbeat:Connect(function(dt)
+    conn = RS.Heartbeat:Connect(function(dt)
         if not banging then
             conn:Disconnect()
             conn = nil
@@ -1078,7 +970,7 @@ unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
         local inCf = CFrame.new(inPos, cf.Position)
 
         t = math.min(t + dt * speed, 1)
-        hrp.CFrame = hrp.CFrame:Lerp(inwards and inCf or backCf, t)
+        HRP.CFrame = HRP.CFrame:Lerp(inwards and inCf or backCf, t)
         if t >= 1 then
             inwards = not inwards
             t = 0
@@ -1100,7 +992,6 @@ end)
 unexpected:AddCommand("execute", "Execute code", function(...)
     loadstring(...)()
 end, nil, {...})
-
 
 --#locales
 UX_rconfig()
