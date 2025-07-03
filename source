@@ -19,6 +19,10 @@ UIS = cloneref(game:GetService("UserInputService"))
 RS = cloneref(game:GetService("RunService"))
 GS = cloneref(game:GetService("GuiService"))
 LP = cloneref(PLRS.LocalPlayer)
+TS = cloneref(game:GetService("TweenService"))
+HS = cloneref(game:GetService("HttpService"))
+TPS = cloneref(game:GetService("TeleportService"))
+WS = cloneref(game:GetService("Workspace"))
 --#importsEnd
 
 local currentVersion = "1"
@@ -113,20 +117,23 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	aliases = aliases or {}
 	usageArgs = usageArgs or {}
 
+	local displayName = name
+	local actualName = name:gsub("^%[.-%]%s*", "")
+
 	local entry = {
-		Original = name,
+		Original = actualName,
 		Description = desc,
 		Execute = func,
 		Aliases = aliases,
 	}
 
-	commandListData[name:lower()] = entry
+	commandListData[actualName:lower()] = entry
 	for _, alias in ipairs(aliases) do
 		commandListData[alias:lower()] = entry
 	end
 
 	local btn = commandexample:Clone()
-	local allNames = {name}
+	local allNames = {displayName}
 	for _, alias in ipairs(aliases) do
 		table.insert(allNames, alias)
 	end
@@ -135,11 +142,12 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	btn.Position = UDim2.new(0, 0, 0, index * 32)
 	btn.Parent = scrollinglist
 
-	local usage = "usage: " .. name
+	local usage = "usage: " .. actualName
 	if #usageArgs > 0 then
 		usage = usage .. " [" .. table.concat(usageArgs, "] [") .. "]"
 	end
 
+	-- Tooltip
 	local tooltip = Instance.new("TextLabel")
 	tooltip.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 	tooltip.Visible = false
@@ -151,7 +159,6 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	tooltip.TextYAlignment = Enum.TextYAlignment.Top
 	tooltip.ZIndex = 9999
 	tooltip.AutomaticSize = Enum.AutomaticSize.XY
-	tooltip.TextScaled = false
 	tooltip.Size = UDim2.new(0, 300, 0, 0)
 	tooltip.Parent = gui
 	tooltip.BorderSizePixel = 0
@@ -167,13 +174,13 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	padding.PaddingBottom = UDim.new(0, 6)
 	padding.PaddingLeft = UDim.new(0, 8)
 	padding.PaddingRight = UDim.new(0, 8)
-	
+
 	local constraint = Instance.new("UITextSizeConstraint", tooltip)
 	constraint.MaxTextSize = 18
-	
+
 	local onHover = false
 	local hoverToken = nil
-	
+
 	btn.MouseEnter:Connect(function()
 		onHover = true
 		local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
@@ -182,7 +189,7 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 		tooltip.Visible = true
 		hoverToken = tick()
 	end)
-	
+
 	btn.MouseLeave:Connect(function()
 		local thisToken = tick()
 		hoverToken = thisToken
@@ -191,23 +198,24 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 			tooltip.Visible = false
 		end
 	end)
-	
+
 	RS.RenderStepped:Connect(function()
 		if onHover and tooltip.Visible then
 			local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
 			tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
 		end
 	end)
-	
+
 	btn.MouseButton1Click:Connect(function()
-		command.Text = name
+		command.Text = actualName
 		task.wait(0.01)
 		command:CaptureFocus()
 	end)
-	
+
 	index += 1
 	scrollinglist.CanvasSize = UDim2.new(0, 0, 0, index * 32)
 end
+
 
 --#notification
 local notificationQueue = {}
@@ -216,11 +224,12 @@ local isNotif = false
 local notifUI = Instance.new("Frame")
 notifUI.Name = "notification"
 notifUI.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-notifUI.SizePixel = 0
-notifUI.Position = UDim2.new(0, 330,1, -169)
+notifUI.BorderSizePixel = 0
+notifUI.AnchorPoint = Vector2.new(0, 1)
+notifUI.Position = UDim2.new(0.5, 170, 1, -100)
 notifUI.Size = UDim2.new(0, 208, 0, 169)
 notifUI.Visible = false
-notifUI.Parent = commandbar
+notifUI.Parent = gui
 
 local notiftitle = Instance.new("TextLabel", notifUI)
 notiftitle.Name = "notiftitle"
@@ -253,7 +262,7 @@ loadingBar.Position = UDim2.new(0, 0, 1, -4)
 loadingBar.Size = UDim2.new(1, 0, 0, 4)
 loadingBar.AnchorPoint = Vector2.new(0, 1)
 
-local TweenService = game:GetService("TweenService")
+
 
 function unexpected:notify(title, ...)
     local args = {...}
@@ -274,31 +283,68 @@ function unexpected:notify(title, ...)
 end
 
 function notifQueue()
-    if #notificationQueue == 0 then
-        isNotif = false
-        notifUI.Visible = false
-        return
-    end
+	if #notificationQueue == 0 then
+		isNotif = false
 
-    isNotif = true
-    local data = table.remove(notificationQueue, 1)
+		local fadeOutTween = TS:Create(notifUI, TweenInfo.new(0.25), {
+			BackgroundTransparency = 1,
+			Position = notifUI.Position + UDim2.new(0, 0, 0, 10),
+		})
+		for _, v in ipairs(notifUI:GetDescendants()) do
+			if v:IsA("TextLabel") then
+				TS:Create(v, TweenInfo.new(0.25), {TextTransparency = 1}):Play()
+			end
+		end
+		fadeOutTween:Play()
 
-    local total = #notificationQueue + 1
-    notiftitle.Text = string.format("%s (%d)", tostring(data.title), total)
-    notiftext.Text = tostring(data.text or "")
+		task.delay(0.3, function()
+			notifUI.Visible = false
+			notifUI.BackgroundTransparency = 0
+			for _, v in ipairs(notifUI:GetDescendants()) do
+				if v:IsA("TextLabel") then
+					v.TextTransparency = 0
+				end
+			end
+			notifUI.Position = notifUI.Position - UDim2.new(0, 0, 0, 10)
+		end)
+		return
+	end
 
-    loadingBar.Size = UDim2.new(1, 0, 0, 4)
-    notifUI.Visible = true
+	isNotif = true
+	local data = table.remove(notificationQueue, 1)
 
-    local barTween = TweenService:Create(loadingBar, TweenInfo.new(5, Enum.EasingStyle.Linear), {
-        Size = UDim2.new(0, 0, 0, 4)
-    })
-    barTween:Play()
+	local total = #notificationQueue + 1
+	notiftitle.Text = string.format("%s (%d)", tostring(data.title), total)
+	notiftext.Text = tostring(data.text or "")
+	loadingBar.Size = UDim2.new(1, 0, 0, 4)
+	notifUI.Visible = true
 
-    task.delay(5, function()
-        notifUI.Visible = false
-        notifQueue()
-    end)
+	-- Only fade in if it's the first notification
+	if total == 1 then
+		notifUI.BackgroundTransparency = 1
+		for _, v in ipairs(notifUI:GetDescendants()) do
+			if v:IsA("TextLabel") then
+				v.TextTransparency = 1
+			end
+		end
+
+		TS:Create(notifUI, TweenInfo.new(0.25), {
+			BackgroundTransparency = 0,
+			Position = notifUI.Position - UDim2.new(0, 0, 0, 10),
+		}):Play()
+		for _, v in ipairs(notifUI:GetDescendants()) do
+			if v:IsA("TextLabel") then
+				TS:Create(v, TweenInfo.new(0.25), {TextTransparency = 0}):Play()
+			end
+		end
+	end
+
+	local barTween = TS:Create(loadingBar, TweenInfo.new(5, Enum.EasingStyle.Linear), {
+		Size = UDim2.new(0, 0, 0, 4)
+	})
+	barTween:Play()
+
+	task.delay(5, notifQueue)
 end
 --#notificationEnd
 
@@ -358,74 +404,235 @@ end)
 --#inputsEnd
 
 --#utils
-local HttpService = game:GetService("HttpService")
 local configFile = "unexpected_config.json"
-local versionURL = "https://raw.githubusercontent.com/hashed-cmd/unexpected/refs/heads/main/version"
+
 local defaultConfig = {
-    keepUX = true
+	keepUX = true,
 }
 
 function UX_rconfig()
-    if not isfile(configFile) then
-        for key, value in pairs(defaultConfig) do
-            getgenv()[key] = value
-        end
+	local config = {}
 
-        local defaultJSON = HttpService:JSONEncode(defaultConfig)
-        writefile(configFile, defaultJSON)
-    else
-        local success, content = pcall(readfile, configFile)
-        if success and content then
-            local parsed = HttpService:JSONDecode(content)
-            for key, value in pairs(defaultConfig) do
-                getgenv()[key] = parsed[key] ~= nil and parsed[key] or value
-            end
-        end
-    end
+	if isfile(configFile) then
+		local success, content = pcall(readfile, configFile)
+		if success and content then
+			local parsed = nil
+			local ok, err = pcall(function()
+				parsed = HS:JSONDecode(content)
+			end)
+			if ok and typeof(parsed) == "table" then
+				config = parsed
+			end
+		end
+	end
+
+	for key, default in pairs(defaultConfig) do
+		local val = config[key]
+		if val == nil then
+			val = default
+		end
+		config[key] = val
+		getgenv()[key] = val
+	end
+
+	local success, err = pcall(function()
+		writefile(configFile, HS:JSONEncode(config))
+	end)
+	if not success then
+		unexpected:notify("[unexpected]", err)
+	end
 end
 
 function UX_config()
-    local currentConfig = {}
-    for key, _ in pairs(defaultConfig) do
-        currentConfig[key] = getgenv()[key]
-    end
-    local content = HttpService:JSONEncode(currentConfig)
-    pcall(writefile, configFile, content)
+	local toSave = {}
+	for key in pairs(defaultConfig) do
+		toSave[key] = getgenv()[key]
+	end
+	local success, err = pcall(function()
+		writefile(configFile, HS:JSONEncode(toSave))
+	end)
+	if not success then
+		unexpected:notify("[unexpected]", err)
+	end
 end
-
-function UX_version()
-    local success, result = pcall(function()
-        local response = game:HttpGet(versionURL)
-        return HttpService:JSONDecode(response)
-    end)
-    if success and result.version and result.version ~= currentVersion then
-        unexpected:notify("unexpected", "Wrong version, you are on v"..currentVersion.." when it is supposed to be v"..result.version)
-        if result.shout then
-            unexpected:notify("unexpected", result.shout)
-        end
-    end
-end
-
-UX_rconfig()
-UX_version()
 --#utilsEnd
+
+--#uiToggles
+local isVisible = false
+local fadeTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+local indicatorCircle = Instance.new("Frame")
+indicatorCircle.Size = UDim2.new(0, 10, 0, 10)
+indicatorCircle.Position = UDim2.new(1, -14, 1, -14)
+indicatorCircle.AnchorPoint = Vector2.new(1, 1)
+indicatorCircle.BackgroundColor3 = Color3.fromRGB(0, 85, 198)
+indicatorCircle.BorderSizePixel = 0
+indicatorCircle.Visible = true
+indicatorCircle.ZIndex = 999
+indicatorCircle.Parent = gui
+
+local function fadeUI(show)
+	isVisible = show
+	if show then
+		commandbar.Visible = true
+		indicatorCircle.Visible = false
+		TS:Create(commandbar, fadeTweenInfo, {BackgroundTransparency = 0}):Play()
+		for _, v in ipairs(commandbar:GetDescendants()) do
+			if v:IsA("TextLabel") or v:IsA("TextBox") or v:IsA("TextButton") then
+				TS:Create(v, fadeTweenInfo, {TextTransparency = 0}):Play()
+			elseif v:IsA("UIStroke") then
+				TS:Create(v, fadeTweenInfo, {Transparency = 0}):Play()
+			end
+		end
+	else
+		local fadeOut = TS:Create(commandbar, fadeTweenInfo, {BackgroundTransparency = 1})
+		fadeOut:Play()
+		for _, v in ipairs(commandbar:GetDescendants()) do
+			if v:IsA("TextLabel") or v:IsA("TextBox") or v:IsA("TextButton") then
+				TS:Create(v, fadeTweenInfo, {TextTransparency = 1}):Play()
+			elseif v:IsA("UIStroke") then
+				TS:Create(v, fadeTweenInfo, {Transparency = 1}):Play()
+			end
+		end
+		task.delay(0.26, function()
+			commandbar.Visible = false
+			indicatorCircle.Visible = true
+		end)
+	end
+end
+
+UIS.InputBegan:Connect(function(input, processed)
+	if not processed and input.KeyCode == Enum.KeyCode.Semicolon then
+		command:CaptureFocus()
+	end
+end)
+
+command.Focused:Connect(function()
+	fadeUI(true)
+end)
+
+local lastFocusLost = 0
+
+command.FocusLost:Connect(function()
+	lastFocusLost = tick()
+
+	task.delay(2, function()
+		if tick() - lastFocusLost >= 1.95 then
+			if not command:IsFocused() and command.Text == "" then
+				fadeUI(false)
+			end
+		end
+	end)
+end)
+
+command.Focused:Connect(function()
+	if not isVisible then
+		fadeUI(true)
+	end
+end)
+--#uiTogglesEnd
 
 
 --#commands
-
 unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
-    local target = PLRS:FindFirstChild(targetName)
+    local target
+
+    for _, player in pairs(PLRS:GetPlayers()) do
+        if player.DisplayName:lower() == targetName:lower() or player.Name:lower() == targetName:lower() then
+            target = player
+            break
+        end
+    end
+
     if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
             hrp.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-        else
-            unexpected:notify("goto", "Your character is missing a HumanoidRootPart.")
         end
-    else
-        unexpected:notify("goto", "Player or character not found.")
     end
 end, nil, {"playerName"})
+
+
+unexpected:AddCommand("reset", "Resets your character", function()
+    LP.Character:BreakJoints()
+end)
+
+unexpected:AddCommand("clearhats", "Removes all hats", function()
+    if LP.Character then
+        for _, item in ipairs(LP.Character:GetChildren()) do
+            if item:IsA("Accessory") then
+                item:Destroy()
+            end
+        end
+    end
+end)
+
+unexpected:AddCommand("pos", "Prints your position", function()
+    local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        unexpected:notify("position", tostring(hrp.Position))
+    end
+end)
+
+unexpected:AddCommand("platformstand", "Toggles PlatformStand", function()
+    local humanoid = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = not humanoid.PlatformStand
+    end
+end)
+
+unexpected:AddCommand("resetcam", "Resets the camera to your character", function()
+    WS.CurrentCamera.CameraSubject = LP.Character and LP.Character:FindFirstChild("Humanoid")
+end)
+
+unexpected:AddCommand("flip", "Flips your character upside down", function()
+    local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = hrp.CFrame * CFrame.Angles(math.pi, 0, 0)
+    end
+end)
+
+unexpected:AddCommand("glide", "Enable glide mode (slow fall)", function()
+    local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.JumpPower = 0
+        hum.AutoRotate = false
+        local sv = Instance.new("BodyVelocity", hum.RootPart or LP.Character.PrimaryPart)
+        sv.Name = "GlideVelocity"
+        sv.MaxForce = Vector3.new(0, 10000, 0)
+        sv.Velocity = Vector3.new(0, -10, 0)
+    end
+end, nil, {})
+
+unexpected:AddCommand("unglide", "Disable glide mode", function()
+    local root = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if root then
+        local vel = root:FindFirstChild("GlideVelocity")
+        if vel then vel:Destroy() end
+        local hum = LP.Character:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.JumpPower = 50
+            hum.AutoRotate = true
+        end
+    end
+end)
+
+unexpected:AddCommand("iceslide", "Slide around with low friction", function()
+    for _, part in ipairs(LP.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.3, 0.5)
+        end
+    end
+end)
+
+unexpected:AddCommand("uniceslide", "Restore normal walking friction", function()
+    for _, part in ipairs(LP.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 0.5)
+        end
+    end
+end)
+
 
 unexpected:AddCommand("walkspeed", "Set your walkspeed", function(speed)
     speed = tonumber(speed)
@@ -441,14 +648,20 @@ unexpected:AddCommand("jumppower", "Set your jumppower", function(power)
     end
 end, nil, {"power"})
 
-unexpected:AddCommand("sit", "Makes your character sit", function()
-    local human = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
-    if human then
-        human.Sit = true
-    else
-        unexpected:notify("sit", "Humanoid not found.")
+unexpected:AddCommand("sit", "Force sit", function()
+    local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.Sit = true
     end
 end)
+
+unexpected:AddCommand("stand", "Force stand", function()
+    local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.Sit = false
+        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+    end
+end, {"unsit"}, nil)
 
 local spinning = false
 local spinConnection
@@ -481,6 +694,66 @@ unexpected:AddCommand("unspin", "Stop spinning your character", function()
     spinning = false
 end)
 
+unexpected:AddCommand("stun", "Freezes your character (PlatformStand)", function()
+    local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.PlatformStand = true
+    end
+end)
+
+unexpected:AddCommand("unstun", "Remove fake stun", function()
+    local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.PlatformStand = false
+    end
+end)
+
+unexpected:AddCommand("jump", "Forces local jump", function()
+    local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+unexpected:AddCommand("state", "Set HumanoidState", function(args)
+    local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+
+    local input = args[1]
+    if not input then return end
+
+    input = input:upper()
+
+    for _, state in pairs(Enum.HumanoidStateType:GetEnumItems()) do
+        if state.Name:upper() == input then
+            hum:ChangeState(state)
+            return
+        end
+    end
+end)
+
+unexpected:AddCommand("[CLIENT] freeze", "Freeze character", function()
+    local char = LP.Character
+    if char then
+        for _, p in pairs(char:GetChildren()) do
+            if p:IsA("BasePart") then
+                p.Anchored = true
+            end
+        end
+    end
+end)
+
+unexpected:AddCommand("[CLIENT] unfreeze", "Unfreeze your character", function()
+    local char = LP.Character
+    if char then
+        for _, p in pairs(char:GetChildren()) do
+            if p:IsA("BasePart") then
+                p.Anchored = false
+            end
+        end
+    end
+end)
+
 unexpected:AddCommand("print", "Prints all arguments", function(...) 
     print(...) 
 end, {"echo", "say"}, {"..."})
@@ -489,30 +762,66 @@ unexpected:AddCommand("notify", "Notify all arguments", function(...)
     unexpected:notify("unexpected", ...)
 end, nil, {"..."})
 
-unexpected:AddCommand("cmds", "Shows commands", function() 
-    commandlist.Visible = not commandlist.Visible 
+unexpected:AddCommand("cmds", "Shows commands", function()
+	local showing = not commandlist.Visible
+	commandlist.Visible = true
+
+	local targetTransparency = showing and 0 or 1
+	local targetOffset = showing and 0 or 10
+
+	for _, obj in ipairs(commandlist:GetDescendants()) do
+		if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then
+			if pcall(function() return obj.TextTransparency end) then
+				TS:Create(obj, TweenInfo.new(0.25), {
+					TextTransparency = targetTransparency
+				}):Play()
+			end
+		elseif obj:IsA("UIStroke") then
+			TS:Create(obj, TweenInfo.new(0.25), {
+				Transparency = targetTransparency
+			}):Play()
+		end
+	end
+
+	TS:Create(commandlist, TweenInfo.new(0.25), {
+		BackgroundTransparency = targetTransparency,
+		Position = commandlist.Position + UDim2.new(0, 0, 0, showing and -10 or 10)
+	}):Play()
+
+	if not showing then
+		task.delay(0.26, function()
+			commandlist.Visible = false
+		end)
+	end
 end)
 
 unexpected:AddCommand("rejoin", "Rejoins the current server", function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId, LP)
+    TPS:Teleport(game.PlaceId, LP)
 end)
 
 unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", function(state)
-    state = tostring(state):lower()
-    if state == "true" then
-        getgenv().keepUX = true
-    elseif state == "false" then
-        getgenv().keepUX = false
-    end
-    UX_config()
+	state = tostring(state):lower()
+	if state == "true" then
+		getgenv().keepUX = true
+	elseif state == "false" then
+		getgenv().keepUX = false
+	else
+		unexpected:notify("keepUX", "Usage: keepUX true/false")
+		return
+	end
+	UX_config()
+	unexpected:notify("keepUX", "Now set to:", tostring(getgenv().keepUX))
 end, nil, {"true/false"})
 
 --#locales
+UX_rconfig()
+
 local tpCHECK = false
 LP.OnTeleport:Connect(function(State)
-    if keepUX and not tpCHECK and queueteleport then
-        tpCHECK = true
-        queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/hashed-cmd/unexpected/refs/heads/main/source'))()")
-    end
+	if getgenv().keepUX and not tpCHECK and queueteleport then
+		tpCHECK = true
+		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/hashed-cmd/unexpected/refs/heads/main/source'))()")
+	end
 end)
+
 --#localesEnd
