@@ -141,32 +141,39 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	end
 
 	local tooltip = Instance.new("TextLabel")
-    tooltip.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    tooltip.Visible = false
-    tooltip.Font = Enum.Font.Gotham
-    tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tooltip.TextSize = 18
-    tooltip.TextWrapped = true
-    tooltip.TextXAlignment = Enum.TextXAlignment.Left
-    tooltip.TextYAlignment = Enum.TextYAlignment.Top
-    tooltip.ZIndex = 9999
-    tooltip.AutomaticSize = Enum.AutomaticSize.XY
-    tooltip.TextScaled = false
-    tooltip.Size = UDim2.new(0, 300, 0, 0)
-    tooltip.Parent = gui
+	tooltip.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	tooltip.Visible = false
+	tooltip.Font = Enum.Font.Gotham
+	tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tooltip.TextSize = 18
+	tooltip.TextWrapped = true
+	tooltip.TextXAlignment = Enum.TextXAlignment.Left
+	tooltip.TextYAlignment = Enum.TextYAlignment.Top
+	tooltip.ZIndex = 9999
+	tooltip.AutomaticSize = Enum.AutomaticSize.XY
+	tooltip.TextScaled = false
+	tooltip.Size = UDim2.new(0, 300, 0, 0)
+	tooltip.Parent = gui
+	tooltip.BorderSizePixel = 0
 
-    local padding = Instance.new("UIPadding", tooltip)
-    padding.PaddingTop = UDim.new(0, 6)
-    padding.PaddingBottom = UDim.new(0, 6)
-    padding.PaddingLeft = UDim.new(0, 8)
-    padding.PaddingRight = UDim.new(0, 8)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(60, 60, 60)
+	stroke.Thickness = 1
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = tooltip
 
-    local constraint = Instance.new("UITextSizeConstraint", tooltip)
-    constraint.MaxTextSize = 18
-    
+	local padding = Instance.new("UIPadding", tooltip)
+	padding.PaddingTop = UDim.new(0, 6)
+	padding.PaddingBottom = UDim.new(0, 6)
+	padding.PaddingLeft = UDim.new(0, 8)
+	padding.PaddingRight = UDim.new(0, 8)
+	
+	local constraint = Instance.new("UITextSizeConstraint", tooltip)
+	constraint.MaxTextSize = 18
+	
 	local onHover = false
 	local hoverToken = nil
-
+	
 	btn.MouseEnter:Connect(function()
 		onHover = true
 		local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
@@ -175,7 +182,7 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 		tooltip.Visible = true
 		hoverToken = tick()
 	end)
-
+	
 	btn.MouseLeave:Connect(function()
 		local thisToken = tick()
 		hoverToken = thisToken
@@ -184,20 +191,20 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 			tooltip.Visible = false
 		end
 	end)
-
+	
 	RS.RenderStepped:Connect(function()
 		if onHover and tooltip.Visible then
 			local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
 			tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
 		end
 	end)
-
+	
 	btn.MouseButton1Click:Connect(function()
 		command.Text = name
 		task.wait(0.01)
 		command:CaptureFocus()
 	end)
-
+	
 	index += 1
 	scrollinglist.CanvasSize = UDim2.new(0, 0, 0, index * 32)
 end
@@ -209,7 +216,7 @@ local isNotif = false
 local notifUI = Instance.new("Frame")
 notifUI.Name = "notification"
 notifUI.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-notifUI.BorderSizePixel = 0
+notifUI.SizePixel = 0
 notifUI.Position = UDim2.new(0, 330,1, -169)
 notifUI.Size = UDim2.new(0, 208, 0, 169)
 notifUI.Visible = false
