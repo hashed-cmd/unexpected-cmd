@@ -24,12 +24,12 @@ TPS = cloneref(game:GetService("TeleportService"))
 WS = cloneref(game:GetService("Workspace"))
 VU = cloneref(game:GetService("VirtualUser"))
 CAM = cloneref(WS.CurrentCamera)
-MOBILE = UIS.TouchEnabled -- I do think theres a better way of doing this
+MOBILE = UIS.TouchEnabled -- ← I do think theres a better way of doing this
 --#importsEnd
 
 --#importFuncs
 CHAR = LP.Character or LP.CharacterAdded:Wait() 
-HUM = cloneref(CHAR:WaitForChild("Humanoid")) -- Rather do this than call a function everytime
+HUM = cloneref(CHAR:WaitForChild("Humanoid")) -- ← Rather do this than call a function everytime
 HRP = cloneref(CHAR:WaitForChild("HumanoidRootPart"))
 --#importFuncsEnd
 
@@ -298,7 +298,7 @@ function notifQueue()
 					v.TextTransparency = 0
 				end
 			end
-			notifUI.Position = notifPos -- ← reset cleanly
+			notifUI.Position = notifPos -- ← reset cleanly [upd: should be the best way?]
 		end)
 		return
 	end
@@ -341,7 +341,7 @@ end
 --#notificationEnd
 
 --#inputs
-UIS.InputBegan:Connect(function(input, processed)
+UIS.InputBegan:Connect(function(input, processed) -- ← i do think there's a better way on making this
     if input.KeyCode == Enum.KeyCode.Semicolon then
         task.wait(0.01)
         command.Text = ""
@@ -427,7 +427,7 @@ searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 searchBox.TextSize = 14
 searchBox.TextXAlignment = Enum.TextXAlignment.Left
 
-local function updateList(filter)
+local function updateList(filter) -- ← debloat some lines here
 	filter = filter:lower()
 	local all, visible = {}, {}
 
