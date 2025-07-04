@@ -639,6 +639,11 @@ end)
 --#uiTogglesEnd
 
 --#commands
+unexpected:AddCommand("unexspy", "Remote spy", function()
+	unexpected:notify("unexspy", "Running")
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/misc/unexspy",true))()
+end, {"remotespy"}, nil)
+
 unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
     local target
     if targetName:lower() == "random" then
