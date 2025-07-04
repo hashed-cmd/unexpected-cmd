@@ -1,0 +1,410 @@
+function missing(t, f, fallback)
+    if type(f) == t then return f end
+    return fallback
+end
+
+cloneref = missing("function", cloneref, function(...) return ... end)
+
+COREGUI = cloneref(game:GetService("CoreGui"))
+PLRS = cloneref(game:GetService("Players"))
+UIS = cloneref(game:GetService("UserInputService"))
+GS = cloneref(game:GetService("GuiService"))
+LP = cloneref(PLRS.LocalPlayer)
+CHAR = LP.Character or LP.CharacterAdded:Wait() 
+
+local function randomString(length, charset)
+	length = length or math.random(10, 20)
+	charset = charset or "abcdefghijklmnopqRStuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	local chars = {}
+	local charsetLength = #charset
+	for i = 1, length do
+		local rand = math.random(1, charsetLength)
+		chars[i] = charset:sub(rand, rand)
+	end
+	return table.concat(chars)
+end
+
+local unexspy = Instance.new("ScreenGui")
+unexspy.Name = randomString()
+unexspy.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+unexspy.Parent = COREGUI
+
+local Main = Instance.new("Frame")
+Main.Position = UDim2.new(0.5, -265, 0.5, -142)
+Main.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Main.Size = UDim2.new(0, 530, 0, 285)
+Main.BorderSizePixel = 0
+Main.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Main.Parent = unexspy
+
+local dragging, dragInput, dragStart, startPos
+Main.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = Main.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+Main.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+local Pages = Instance.new("Frame")
+Pages.Position = UDim2.new(0.6320754885673523, -159, 1.5964912176132202, -455)
+Pages.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Pages.Size = UDim2.new(0, 354, 0, 285)
+Pages.BorderSizePixel = 0
+Pages.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Pages.Parent = Main
+Instance.new("UIStroke", Pages).Color = Color3.fromRGB(60, 60, 60)
+
+local Frame = Instance.new("ScrollingFrame")
+Frame.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+Frame.Active = true
+Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Frame.BackgroundTransparency = 1
+Frame.Size = UDim2.new(0, 354, 0, 285)
+Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Frame.ScrollBarImageTransparency = 1
+Frame.BorderSizePixel = 0
+Frame.CanvasSize = UDim2.new(0, 0, 0, 0)
+Frame.Parent = Pages
+
+local CCBackground = Instance.new("Frame")
+CCBackground.Position = UDim2.new(0.4768681824207306, -159, 2.277193069458008, -455)
+CCBackground.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CCBackground.Size = UDim2.new(0, 105, 0, 31)
+CCBackground.BorderSizePixel = 0
+CCBackground.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+CCBackground.Parent = Frame
+Instance.new("UIStroke", CCBackground).Color = Color3.fromRGB(60, 60, 60)
+
+local CCButton = Instance.new("TextButton")
+CCButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+CCButton.TextColor3 = Color3.fromRGB(178, 178, 178)
+CCButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CCButton.Text = "Copy Code"
+CCButton.Size = UDim2.new(0, 95, 0, 31)
+CCButton.Position = UDim2.new(0.04762355983257294, 0, 0, 0)
+CCButton.BackgroundTransparency = 1
+CCButton.TextXAlignment = Enum.TextXAlignment.Left
+CCButton.BorderSizePixel = 0
+CCButton.TextWrapped = true
+CCButton.TextSize = 14
+CCButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CCButton.Parent = CCBackground
+
+local BLKBackground = Instance.new("Frame")
+BLKBackground.Name = "BLK"
+BLKBackground.Position = UDim2.new(0.4768681824207306, -159, 2.417543888092041, -455)
+BLKBackground.BorderColor3 = Color3.fromRGB(0, 0, 0)
+BLKBackground.Size = UDim2.new(0, 105, 0, 31)
+BLKBackground.BorderSizePixel = 0
+BLKBackground.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+BLKBackground.Parent = Frame
+Instance.new("UIStroke", BLKBackground).Color = Color3.fromRGB(60, 60, 60)
+
+local BLKButton = Instance.new("TextButton")
+BLKButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+BLKButton.TextColor3 = Color3.fromRGB(178, 178, 178)
+BLKButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+BLKButton.Text = "Block"
+BLKButton.Size = UDim2.new(0, 95, 0, 31)
+BLKButton.Position = UDim2.new(0.04762355983257294, 0, 0, 0)
+BLKButton.BackgroundTransparency = 1
+BLKButton.TextXAlignment = Enum.TextXAlignment.Left
+BLKButton.BorderSizePixel = 0
+BLKButton.TextWrapped = true
+BLKButton.TextSize = 14
+BLKButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+BLKButton.Parent = BLKBackground
+
+local SSBackground = Instance.new("Frame")
+SSBackground.Position = UDim2.new(0.7989020943641663, -159, 2.417543888092041, -455)
+SSBackground.BorderColor3 = Color3.fromRGB(0, 0, 0)
+SSBackground.Size = UDim2.new(0, 105, 0, 31)
+SSBackground.BorderSizePixel = 0
+SSBackground.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+SSBackground.Parent = Frame
+Instance.new("UIStroke", SSBackground).Color = Color3.fromRGB(60, 60, 60)
+
+local SSButton = Instance.new("TextButton")
+SSButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+SSButton.TextColor3 = Color3.fromRGB(178, 178, 178)
+SSButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+SSButton.Text = "SimpleSpy"
+SSButton.Size = UDim2.new(0, 95, 0, 31)
+SSButton.Position = UDim2.new(0.04762355983257294, 0, 0, 0)
+SSButton.BackgroundTransparency = 1
+SSButton.TextXAlignment = Enum.TextXAlignment.Left
+SSButton.BorderSizePixel = 0
+SSButton.TextWrapped = true
+SSButton.TextSize = 14
+SSButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SSButton.Parent = SSBackground
+
+local CRBackground = Instance.new("Frame")
+CRBackground.Position = UDim2.new(0.7989020943641663, -159, 2.277193069458008, -455)
+CRBackground.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CRBackground.Size = UDim2.new(0, 105, 0, 31)
+CRBackground.BorderSizePixel = 0
+CRBackground.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+CRBackground.Parent = Frame
+Instance.new("UIStroke", CRBackground).Color = Color3.fromRGB(60, 60, 60)
+
+local CRButton = Instance.new("TextButton")
+CRButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+CRButton.TextColor3 = Color3.fromRGB(178, 178, 178)
+CRButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CRButton.Text = "Copy Remote"
+CRButton.Size = UDim2.new(0, 95, 0, 31)
+CRButton.Position = UDim2.new(0.04762355983257294, 0, 0, 0)
+CRButton.BackgroundTransparency = 1
+CRButton.TextXAlignment = Enum.TextXAlignment.Left
+CRButton.BorderSizePixel = 0
+CRButton.TextWrapped = true
+CRButton.TextSize = 14
+CRButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CRButton.Parent = CRBackground
+
+local CLRBLKSBackground = Instance.new("Frame")
+CLRBLKSBackground.Position = UDim2.new(1.1237610578536987, -159, 2.417543888092041, -455)
+CLRBLKSBackground.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CLRBLKSBackground.Size = UDim2.new(0, 105, 0, 31)
+CLRBLKSBackground.BorderSizePixel = 0
+CLRBLKSBackground.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+CLRBLKSBackground.Parent = Frame
+Instance.new("UIStroke", CLRBLKSBackground).Color = Color3.fromRGB(60, 60, 60)
+
+local CLRBLKSButton = Instance.new("TextButton")
+CLRBLKSButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+CLRBLKSButton.TextColor3 = Color3.fromRGB(178, 178, 178)
+CLRBLKSButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CLRBLKSButton.Text = "Clr Blocks"
+CLRBLKSButton.Size = UDim2.new(0, 95, 0, 31)
+CLRBLKSButton.Position = UDim2.new(0.04762355983257294, 0, 0, 0)
+CLRBLKSButton.BackgroundTransparency = 1
+CLRBLKSButton.TextXAlignment = Enum.TextXAlignment.Left
+CLRBLKSButton.BorderSizePixel = 0
+CLRBLKSButton.TextWrapped = true
+CLRBLKSButton.TextSize = 14
+CLRBLKSButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CLRBLKSButton.Parent = CLRBLKSBackground
+
+local RCBackground = Instance.new("Frame")
+RCBackground.Position = UDim2.new(1.1237610578536987, -159, 2.277193069458008, -455)
+RCBackground.BorderColor3 = Color3.fromRGB(0, 0, 0)
+RCBackground.Size = UDim2.new(0, 105, 0, 31)
+RCBackground.BorderSizePixel = 0
+RCBackground.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+RCBackground.Parent = Frame
+Instance.new("UIStroke", RCBackground).Color = Color3.fromRGB(60, 60, 60)
+
+local RCButton = Instance.new("TextButton")
+RCButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+RCButton.TextColor3 = Color3.fromRGB(178, 178, 178)
+RCButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+RCButton.Text = "Run Code"
+RCButton.Size = UDim2.new(0, 95, 0, 31)
+RCButton.Position = UDim2.new(0.04762355983257294, 0, 0, 0)
+RCButton.BackgroundTransparency = 1
+RCButton.TextXAlignment = Enum.TextXAlignment.Left
+RCButton.BorderSizePixel = 0
+RCButton.TextWrapped = true
+RCButton.TextSize = 14
+RCButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+RCButton.Parent = RCBackground
+
+local CodePreview = Instance.new("Frame")
+CodePreview.Name = "CodePreview"
+CodePreview.Position = UDim2.new(0.4768683612346649, -159, 1.6280701160430908, -455)
+CodePreview.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CodePreview.Size = UDim2.new(0, 334, 0, 170)
+CodePreview.BorderSizePixel = 0
+CodePreview.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+CodePreview.Parent = Frame
+Instance.new("UIStroke", CodePreview).Color = Color3.fromRGB(60, 60, 60)
+
+local Preview = Instance.new("TextBox")
+Preview.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Preview.TextColor3 = Color3.fromRGB(178, 178, 178)
+Preview.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Preview.Text = "-- No code"
+Preview.Size = UDim2.new(0, 310, 0, 147)
+Preview.Position = UDim2.new(0.0359281450510025, 0, 0.06470642238855362, 0)
+Preview.BorderSizePixel = 0
+Preview.CursorPosition = -1
+Preview.BackgroundTransparency = 1
+Preview.TextXAlignment = Enum.TextXAlignment.Left
+Preview.TextYAlignment = Enum.TextYAlignment.Top
+Preview.ClearTextOnFocus = false
+Preview.TextSize = 14
+Preview.TextWrapped = true
+Preview.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Preview.Parent = CodePreview
+
+Instance.new("UIStroke", Main).Color = Color3.fromRGB(60, 60, 60)
+
+local Title = Instance.new("TextLabel")
+Title.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+Title.TextColor3 = Color3.fromRGB(178, 178, 178)
+Title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Title.Text = "unexSpy"
+Title.Size = UDim2.new(0, 135, 0, 40)
+Title.Position = UDim2.new(0.16415093839168549, -67, 0.8964912295341492, -20)
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BorderSizePixel = 0
+Title.TextWrapped = true
+Title.TextSize = 16
+Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Title.Parent = Main
+
+local RemoteList = Instance.new("ScrollingFrame")
+RemoteList.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+RemoteList.Active = true
+RemoteList.BorderColor3 = Color3.fromRGB(0, 0, 0)
+RemoteList.BackgroundTransparency = 1
+RemoteList.Size = UDim2.new(0, 176, 0, 235)
+RemoteList.BorderSizePixel = 0
+RemoteList.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+RemoteList.Parent = Main
+
+local RemoteZ = Instance.new("Frame")
+RemoteZ.Position = UDim2.new(0.4943181872367859, -67, 0.03404255211353302, 0)
+RemoteZ.BorderColor3 = Color3.fromRGB(0, 0, 0)
+RemoteZ.Size = UDim2.new(0, 170, 0, 31)
+RemoteZ.BorderSizePixel = 0
+RemoteZ.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+RemoteZ.Parent = RemoteList
+RemoteZ.Visible = false
+Instance.new("UIStroke", RemoteZ).Color = Color3.fromRGB(60, 60, 60)
+
+local RemoteButton = Instance.new("TextButton")
+RemoteButton.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+RemoteButton.TextColor3 = Color3.fromRGB(178, 178, 178)
+RemoteButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+RemoteButton.Text = "Remote Example"
+RemoteButton.Size = UDim2.new(0, 122, 0, 31)
+RemoteButton.Position = UDim2.new(0.04682300612330437, 0, 0, 0)
+RemoteButton.BackgroundTransparency = 1
+RemoteButton.TextXAlignment = Enum.TextXAlignment.Left
+RemoteButton.BorderSizePixel = 0
+RemoteButton.TextWrapped = true
+RemoteButton.TextSize = 14
+RemoteButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+RemoteButton.Parent = RemoteZ
+
+local layout = Instance.new("UIListLayout")
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.Padding = UDim.new(0, 6)
+layout.Parent = RemoteList
+RemoteList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+RemoteList.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local mt, old = getrawmetatable(game), nil
+setreadonly(mt, false)
+old = mt.__namecall
+
+local logs, blocked = {}, {}
+getgenv().UnexSpyLogs = logs
+
+local function path(i)
+	local seg = {}
+	while i and i ~= game do
+		local n = i.Name
+		table.insert(seg, 1, n:match("^[%a_][%w_]*$") and "."..n or string.format("[%q]", n))
+		i = i.Parent
+	end
+	local s = seg[1] or ""
+	return s:match("^%.") and ("game:GetService(%q)%s"):format(s:sub(2), table.concat(seg, "", 2)) or "game"..table.concat(seg)
+end
+
+local function serialize(v)
+	local t = typeof(v)
+	if t == "string" then return ("%q"):format(v)
+	elseif t == "number" or t == "boolean" then return tostring(v)
+	elseif t == "Instance" then return path(v)
+	elseif t == "table" then
+		local out = {}
+		for k, val in pairs(v) do
+			out[#out+1] = "["..serialize(k).."]="..serialize(val)
+		end
+		return "{"..table.concat(out, ",").."}"
+	end
+	return "nil --[["..t.."]]"
+end
+
+local function createLog(remote, method, args)
+	if blocked[remote] then return end
+	local code = ("-- unexSpy - by Hashed\nlocal args = %s\n%s:%s(unpack(args))"):format(serialize(args), path(remote), method)
+
+	local clone = RemoteZ:Clone()
+	clone.Visible = true
+	clone.Size = UDim2.new(1, -12, 0, 31)
+	clone.Position = UDim2.new(0, 6, 0, 0)
+	clone.Parent = RemoteList
+
+	local btn = clone:FindFirstChildWhichIsA("TextButton")
+	if btn then
+		btn.Size = UDim2.new(1, -10, 1, 0)
+		btn.TextWrapped = true
+		btn.Text = remote.Name
+		btn.MouseButton1Click:Connect(function() Preview.Text = code end)
+	end
+end
+
+mt.__namecall = newcclosure(function(self, ...)
+	local m = getnamecallmethod()
+	if not checkcaller() and (m == "FireServer" or m == "InvokeServer") then
+		table.insert(logs, {remote = self, method = m, args = {...}})
+	end
+	return old(self, ...)
+end)
+
+setreadonly(mt, true)
+
+task.spawn(function()
+	while true do
+		for _, log in ipairs(logs) do createLog(log.remote, log.method, log.args) end
+		table.clear(logs)
+		task.wait(0.2)
+	end
+end)
+
+CCButton.MouseButton1Click:Connect(function()
+	if setclipboard then setclipboard(Preview.Text) end
+end)
+
+RCButton.MouseButton1Click:Connect(function()
+	loadstring(Preview.Text)()
+end)
+
+CRButton.MouseButton1Click:Connect(function()
+	if setclipboard then setclipboard("game." .. Preview.Text:match("game%.([%w%._]+)")) end
+end)
+
+BLKButton.MouseButton1Click:Connect(function()
+	if Preview.Text:find(remote:GetFullName(), 1, true) then blockedRemotes[remote] = true end
+end)
+
+CLRBLKSButton.MouseButton1Click:Connect(function()
+	blockedRemotes = {}
+end)
