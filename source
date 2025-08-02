@@ -2,7 +2,8 @@ if unexpected_LOAD then return end
 pcall(function() getgenv().unexpected_LOAD = true end)
 
 function missing(t, f, fallback)
-	return typeof(f) == t and f or fallback
+    if type(f) == t then return f end
+    return fallback
 end
 
 --#core
