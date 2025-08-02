@@ -24,16 +24,17 @@ TPS = cloneref(game:GetService("TeleportService"))
 WS = cloneref(game:GetService("Workspace"))
 VU = cloneref(game:GetService("VirtualUser"))
 CAM = cloneref(WS.CurrentCamera)
-MOBILE = UIS.TouchEnabled -- ← I do think theres a better way of doing this
+MOBILE = UIS.TouchEnabled
 --#importsEnd
 
 --#importFuncs
 CHAR = LP.Character or LP.CharacterAdded:Wait() 
-HUM = cloneref(CHAR:WaitForChild("Humanoid")) -- ← Rather do this than call a function everytime
+HUM = cloneref(CHAR:WaitForChild("Humanoid"))
 HRP = cloneref(CHAR:WaitForChild("HumanoidRootPart"))
 --#importFuncsEnd
 
-local currentVersion = "1.4"
+local G2L = {};
+local currentVersion = "g2"
 local function randomString(length, charset)
 	length = length or math.random(10, 20)
 	charset = charset or "abcdefghijklmnopqRStuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -46,73 +47,252 @@ local function randomString(length, charset)
 	return table.concat(chars)
 end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = randomString()
-gui.Parent = gethui() or COREGUI
+G2L["1"] = Instance.new("ScreenGui", gethui() or COREGUI);
+G2L["1"]["Name"] = randomString();
 
-local commandbar = Instance.new("Frame", gui)
-commandbar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-commandbar.Position = UDim2.new(0.5, -159, 1, -160)
-commandbar.Size = UDim2.new(0, 318, 0, 60)
-Instance.new("UIStroke", commandbar).Color = Color3.fromRGB(60, 60, 60)
+-- StarterGui.public.Pill
+G2L["2"] = Instance.new("Frame", G2L["1"]);
+G2L["2"]["ZIndex"] = 0;
+G2L["2"]["BorderSizePixel"] = 0;
+G2L["2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2"]["Size"] = UDim2.new(0, 218, 0, 71);
+G2L["2"]["Position"] = UDim2.new(0.5, -109, 1, -150);
+G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2"]["Name"] = [[Pill]];
 
-local predictor = Instance.new("TextLabel", commandbar)
-predictor.BackgroundTransparency = 1
-predictor.Position = UDim2.new(0.5, -142, 0.5, -25)
-predictor.Size = UDim2.new(0, 284, 0, 50)
-predictor.Font = Enum.Font.Gotham
-predictor.TextColor3 = Color3.fromRGB(100, 100, 100)
-predictor.TextSize = 20
-predictor.TextXAlignment = Enum.TextXAlignment.Left
-predictor.Text = ""
-predictor.ZIndex = 1
+-- StarterGui.public.Pill.Corner
+G2L["3"] = Instance.new("UICorner", G2L["2"]);
+G2L["3"]["Name"] = [[Corner]];
+G2L["3"]["CornerRadius"] = UDim.new(1, 0);
 
-local command = Instance.new("TextBox", commandbar)
-command.BackgroundTransparency = 1
-command.Position = predictor.Position
-command.Size = predictor.Size
-command.Font = Enum.Font.Gotham
-command.PlaceholderText = "unexpected v"..currentVersion
-command.Text = ""
-command.ClearTextOnFocus = false
-command.TextColor3 = Color3.fromRGB(255, 255, 255)
-command.TextSize = 20
-command.TextXAlignment = Enum.TextXAlignment.Left
-command.ZIndex = 2
+-- StarterGui.public.Pill.Stroke
+G2L["4"] = Instance.new("UIStroke", G2L["2"]);
+G2L["4"]["Name"] = [[Stroke]];
+G2L["4"]["Color"] = Color3.fromRGB(50, 50, 50);
 
-local commandlist = Instance.new("Frame", gui)
-commandlist.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-commandlist.Position = UDim2.new(0.5, -159,1, -455)
-commandlist.Size = UDim2.new(0, 318, 0, 285)
-commandlist.Visible = false
-Instance.new("UIStroke", commandlist).Color = Color3.fromRGB(60, 60, 60)
+-- StarterGui.public.Pill.CLI
+G2L["5"] = Instance.new("TextBox", G2L["2"]);
+G2L["5"]["CursorPosition"] = -1;
+G2L["5"]["Name"] = [[CLI]];
+G2L["5"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["5"]["PlaceholderColor3"] = Color3.fromRGB(120, 120, 120);
+G2L["5"]["BorderSizePixel"] = 0;
+G2L["5"]["TextWrapped"] = true;
+G2L["5"]["TextSize"] = 20;
+G2L["5"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["5"]["PlaceholderText"] = [[unexpected ]]..currentVersion;
+G2L["5"]["Size"] = UDim2.new(0, 167, 0, 54);
+G2L["5"]["Position"] = UDim2.new(0, 25, 0.5, -27);
+G2L["5"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5"]["Text"] = [[]];
+G2L["5"]["ClearTextOnFocus"] = false;
+G2L["5"]["ZIndex"] = 1
+G2L["5"]["BackgroundTransparency"] = 1;
 
-local header = Instance.new("TextLabel", commandlist)
-header.BackgroundTransparency = 1
-header.Position = UDim2.new(0.05, 0, 0.056, 0)
-header.Size = UDim2.new(0, 286, 0, 26)
-header.Font = Enum.Font.Gotham
-header.Text = "command list"
-header.TextColor3 = Color3.fromRGB(178, 178, 178)
-header.TextSize = 20
-header.TextXAlignment = Enum.TextXAlignment.Left
+-- StarterGui.public.Pill.Predictor
+G2L["5a"] = Instance.new("TextLabel", G2L["2"]);
+G2L["5a"]["Name"] = [[Predictor]];
+G2L["5a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["5a"]["BorderSizePixel"] = 0;
+G2L["5a"]["TextWrapped"] = true;
+G2L["5a"]["TextSize"] = 20;
+G2L["5a"]["TextColor3"] = Color3.fromRGB(50,50,50);
+G2L["5a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["5a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["5a"]["Size"] = UDim2.new(0, 167, 0, 54);
+G2L["5a"]["Position"] = UDim2.new(0, 25, 0.5, -27);
+G2L["5a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["5a"]["Text"] = [[]];
+G2L["5a"]["ZIndex"] = 0
+G2L["5a"]["BackgroundTransparency"] = 1;
 
-local scrollinglist = Instance.new("ScrollingFrame", commandlist)
-scrollinglist.Active = true
-scrollinglist.BackgroundTransparency = 1
-scrollinglist.Position = UDim2.new(0.05, 0,0.312, 0)
-scrollinglist.Size = UDim2.new(0, 286,0, 180)
-scrollinglist.ScrollBarThickness = 0
-scrollinglist.CanvasSize = UDim2.new()
+-- StarterGui.public.Pill.Menu
+G2L["6"] = Instance.new("ImageButton", G2L["2"]);
+G2L["6"]["BorderSizePixel"] = 0;
+G2L["6"]["BackgroundTransparency"] = 1;
+G2L["6"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["6"]["ImageColor3"] = Color3.fromRGB(100, 100, 100);
+G2L["6"]["Image"] = [[rbxassetid://10734887784]];
+G2L["6"]["Size"] = UDim2.new(0, 30, 0, 30);
+G2L["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["6"]["Name"] = [[Menu]];
+G2L["6"]["Position"] = UDim2.new(0.83776, 0, 0.28169, 0);
 
-local commandexample = Instance.new("TextButton")
-commandexample.BackgroundTransparency = 1
-commandexample.Size = UDim2.new(0, 286, 0, 31)
-commandexample.Font = Enum.Font.Gotham
-commandexample.TextColor3 = Color3.fromRGB(255, 255, 255)
-commandexample.TextSize = 16
-commandexample.TextXAlignment = Enum.TextXAlignment.Left
-commandexample.Visible = false
+-- StarterGui.public.Pill.Menu.UIAspectRatioConstraint
+G2L["7"] = Instance.new("UIAspectRatioConstraint", G2L["6"]);
+
+-- StarterGui.public.Pill.MenuFrame
+G2L["9"] = Instance.new("Frame", G2L["2"]);
+G2L["9"]["BorderSizePixel"] = 0;
+G2L["9"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["ClipsDescendants"] = true;
+G2L["9"]["Size"] = UDim2.new(0, 339, 0, 348);
+G2L["9"]["Position"] = UDim2.new(0.5, -169, 1, -428);
+G2L["9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["Name"] = [[MenuFrame]];
+G2L["9"]["Visible"] = false;
+
+-- StarterGui.public.Pill.MenuFrame.Corner
+G2L["a"] = Instance.new("UICorner", G2L["9"]);
+G2L["a"]["Name"] = [[Corner]];
+G2L["a"]["CornerRadius"] = UDim.new(0.1, 0);
+
+-- StarterGui.public.Pill.MenuFrame.Stroke
+G2L["b"] = Instance.new("UIStroke", G2L["9"]);
+G2L["b"]["Name"] = [[Stroke]];
+G2L["b"]["Color"] = Color3.fromRGB(50, 50, 50);
+
+-- StarterGui.public.Pill.MenuFrame.Label
+G2L["c"] = Instance.new("TextLabel", G2L["9"]);
+G2L["c"]["TextWrapped"] = true;
+G2L["c"]["ZIndex"] = 2;
+G2L["c"]["TextSize"] = 25;
+G2L["c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["c"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["c"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["c"]["BackgroundTransparency"] = 1;
+G2L["c"]["Size"] = UDim2.new(0, 127, 0, 19);
+G2L["c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["c"]["Text"] = [[menu]];
+G2L["c"]["Name"] = [[Label]];
+G2L["c"]["Position"] = UDim2.new(0.0885, 0, 0.07471, 0);
+
+-- StarterGui.public.Pill.MenuFrame.cmdsButton
+G2L["d"] = Instance.new("TextButton", G2L["9"]);
+G2L["d"]["BorderSizePixel"] = 0;
+G2L["d"]["TextSize"] = 18;
+G2L["d"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["d"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["d"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["d"]["Size"] = UDim2.new(0, 278, 0, 50);
+G2L["d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["d"]["Text"] = [[commands]];
+G2L["d"]["Name"] = [[cmdsButton]];
+G2L["d"]["Visible"] = true;
+G2L["d"]["Position"] = UDim2.new(0.0885, 0, 0.17241, 0);
+
+-- StarterGui.public.Pill.MenuFrame.cmdsButton.Corner
+G2L["e"] = Instance.new("UICorner", G2L["d"]);
+G2L["e"]["Name"] = [[Corner]];
+G2L["e"]["CornerRadius"] = UDim.new(0.3, 0);
+
+-- StarterGui.public.Pill.MenuFrame.cmdsButton.Stroke
+G2L["f"] = Instance.new("UIStroke", G2L["d"]);
+G2L["f"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+G2L["f"]["Name"] = [[Stroke]];
+G2L["f"]["Color"] = Color3.fromRGB(50, 50, 50);
+
+-- StarterGui.public.Pill.MenuFrame.discordButton
+G2L["10"] = Instance.new("TextButton", G2L["9"]);
+G2L["10"]["BorderSizePixel"] = 0;
+G2L["10"]["TextSize"] = 18;
+G2L["10"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["10"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["10"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["10"]["Size"] = UDim2.new(0, 278, 0, 51);
+G2L["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["10"]["Text"] = [[discord]];
+G2L["10"]["Name"] = [[discordButton]];
+G2L["10"]["Visible"] = true;
+G2L["10"]["Position"] = UDim2.new(0.0885, 0, 0.35991, 0);
+
+-- StarterGui.public.Pill.MenuFrame.discordButton.Corner
+G2L["11"] = Instance.new("UICorner", G2L["10"]);
+G2L["11"]["Name"] = [[Corner]];
+G2L["11"]["CornerRadius"] = UDim.new(0.3, 0);
+
+-- StarterGui.public.Pill.MenuFrame.discordButton.Stroke
+G2L["12"] = Instance.new("UIStroke", G2L["10"]);
+G2L["12"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+G2L["12"]["Name"] = [[Stroke]];
+G2L["12"]["Color"] = Color3.fromRGB(50, 50, 50);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoButton
+G2L["13"] = Instance.new("TextButton", G2L["9"]);
+G2L["13"]["BorderSizePixel"] = 0;
+G2L["13"]["TextSize"] = 18;
+G2L["13"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["13"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["13"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["13"]["Size"] = UDim2.new(0, 278, 0, 51);
+G2L["13"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["13"]["Text"] = [[info]];
+G2L["13"]["Name"] = [[infoButton]];
+G2L["13"]["Visible"] = true;
+G2L["13"]["Position"] = UDim2.new(0.0885, 0, 0.55388, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoButton.Corner
+G2L["14"] = Instance.new("UICorner", G2L["13"]);
+G2L["14"]["Name"] = [[Corner]];
+G2L["14"]["CornerRadius"] = UDim.new(0.3, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoButton.Stroke
+G2L["15"] = Instance.new("UIStroke", G2L["13"]);
+G2L["15"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+G2L["15"]["Name"] = [[Stroke]];
+G2L["15"]["Color"] = Color3.fromRGB(50, 50, 50);
+
+
+-- StarterGui.public.Pill.MenuFrame.commandFrame
+G2L["16"] = Instance.new("Frame", G2L["9"]);
+G2L["16"]["BorderSizePixel"] = 0;
+G2L["16"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["16"]["Size"] = UDim2.new(0, 339, 0, 348);
+G2L["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["16"]["Name"] = [[commandFrame]];
+G2L["16"]["BackgroundTransparency"] = 1;
+G2L["16"]["Visible"] = false;
+
+
+-- StarterGui.public.Pill.MenuFrame.commandFrame.buttonList
+G2L["17"] = Instance.new("ScrollingFrame", G2L["16"]);
+G2L["17"]["Active"] = true;
+G2L["17"]["BorderSizePixel"] = 0;
+G2L["17"]["CanvasSize"] = UDim2.new(0, 0, 10, 0);
+G2L["17"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["17"]["Name"] = [[buttonList]];
+G2L["17"]["Size"] = UDim2.new(0, 278, 0, 210);
+G2L["17"]["ScrollBarImageColor3"] = Color3.fromRGB(100, 100, 100);
+G2L["17"]["Position"] = UDim2.new(0.0885, 0, 0.32184, 0);
+G2L["17"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["17"]["ScrollBarThickness"] = 1;
+G2L["17"]["BackgroundTransparency"] = 1;
+
+-- StarterGui.public.Pill.MenuFrame.commandFrame.buttonList.commandExample
+G2L["19"] = Instance.new("TextButton");
+G2L["19"]["BorderSizePixel"] = 0;
+G2L["19"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["19"]["TextSize"] = 18;
+G2L["19"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["19"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["19"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["19"]["Size"] = UDim2.new(0, 278, 0, 33);
+G2L["19"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["19"]["Text"] = [[command / command]];
+G2L["19"]["Name"] = [[commandExample]];
+G2L["19"]["Visible"] = false;
+
+
+-- StarterGui.public.Pill.MenuFrame.commandFrame.commandBack
+G2L["1a"] = Instance.new("ImageButton", G2L["16"]);
+G2L["1a"]["BorderSizePixel"] = 0;
+G2L["1a"]["BackgroundTransparency"] = 1;
+G2L["1a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1a"]["ImageColor3"] = Color3.fromRGB(100, 100, 100);
+G2L["1a"]["Image"] = [[rbxassetid://10709812784]];
+G2L["1a"]["Size"] = UDim2.new(0, 38, 0, 30);
+G2L["1a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1a"]["Name"] = [[commandBack]];
+G2L["1a"]["Position"] = UDim2.new(0.0885, 0, 0.82759, 0);
+
+-- StarterGui.public.Pill.MenuFrame.commandFrame.commandBack.UIAspectRatioConstraint
+G2L["1b"] = Instance.new("UIAspectRatioConstraint", G2L["1a"]);
 
 local unexpected = {}
 local commandListData = {}
@@ -136,22 +316,22 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 		commandListData[alias:lower()] = entry
 	end
 
-	local btn = commandexample:Clone()
+	local btn = G2L["19"]:Clone()
 	local allNames = {displayName}
 	for _, alias in ipairs(aliases) do table.insert(allNames, alias) end
 	btn.Text = table.concat(allNames, " / ")
 	btn.Visible = true
 	btn.Position = UDim2.new(0, 0, 0, index * 32)
-	btn.Parent = scrollinglist
+	btn.Parent = G2L["17"]
 
 	local usage = "usage: " .. actualName
 	if #usageArgs > 0 then usage = usage .. " [" .. table.concat(usageArgs, "] [") .. "]" end
 
 	local tooltip = Instance.new("TextLabel")
-	tooltip.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	tooltip.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 	tooltip.Visible = false
 	tooltip.Font = Enum.Font.Gotham
-	tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tooltip.TextColor3 = Color3.fromRGB(220, 220, 220)
 	tooltip.TextSize = 18
 	tooltip.TextWrapped = true
 	tooltip.TextXAlignment = Enum.TextXAlignment.Left
@@ -159,12 +339,14 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	tooltip.ZIndex = 9999
 	tooltip.AutomaticSize = Enum.AutomaticSize.XY
 	tooltip.Size = UDim2.new(0, 300, 0, 0)
-	tooltip.Parent = gui
+	tooltip.Parent = G2L["1"]
 	tooltip.BorderSizePixel = 0
-	Instance.new("UIStroke", tooltip).Color = Color3.fromRGB(60, 60, 60)
+	local toolst = Instance.new("UIStroke", tooltip)
+	toolst.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	toolst.Color = Color3.fromRGB(50, 50, 50)
+	Instance.new("UICorner", tooltip).CornerRadius = UDim.new(0.1, 0);
 
 	local padding = Instance.new("UIPadding", tooltip)
-	padding.PaddingTop = UDim.new(0, 6)
 	padding.PaddingBottom = UDim.new(0, 6)
 	padding.PaddingLeft = UDim.new(0, 8)
 	padding.PaddingRight = UDim.new(0, 8)
@@ -201,81 +383,62 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	end)
 
 	btn.MouseButton1Click:Connect(function()
-		command.Text = actualName
+		G2L["5"].Text = actualName
 		task.wait(0.01)
-		command:CaptureFocus()
+		G2L["5"]:CaptureFocus()
 	end)
 
 	index += 1
-	scrollinglist.CanvasSize = UDim2.new(0, 0, 0, index * 32)
+	G2L["17"].CanvasSize = UDim2.new(0, 0, 0, index * 32)
 end
 
 --#notification
 local notificationQueue = {}
 local isNotif = false
-
 local notifUI = Instance.new("Frame")
-notifUI.Name = "notification"
-notifUI.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-notifUI.BorderSizePixel = 0
-notifUI.AnchorPoint = Vector2.new(0, 1)
-notifUI.Position = UDim2.new(0.5, 170, 1, -100)
-notifUI.Size = UDim2.new(0, 208, 0, 169)
+notifUI.Name = "Notification"
+notifUI.Parent = G2L["1"]
+notifUI.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+notifUI.Position = UDim2.new(1, -378, 0.962686539, -189)
+notifUI.Size = UDim2.new(0, 328, 0, 169)
 notifUI.Visible = false
-notifUI.Parent = gui
-Instance.new("UIStroke", notifUI).Color = Color3.fromRGB(60, 60, 60)
-
+Instance.new("UICorner", notifUI).CornerRadius = UDim.new(0.2, 0)
+Instance.new("UIStroke", notifUI).Color = Color3.fromRGB(50, 50, 50)
+ 
 local notiftitle = Instance.new("TextLabel", notifUI)
-notiftitle.Name = "notiftitle"
+notiftitle.Name = "Title"
 notiftitle.BackgroundTransparency = 1
-notiftitle.Position = UDim2.new(0.074, 0, 0.092, 0)
-notiftitle.Size = UDim2.new(0, 177, 0, 20)
-notiftitle.Font = Enum.Font.Gotham
-notiftitle.Text = "Notification"
-notiftitle.TextColor3 = Color3.fromRGB(178, 178, 178)
-notiftitle.TextSize = 20
+notiftitle.Position = UDim2.new(0.088, 0, 0.176, 0)
+notiftitle.Size = UDim2.new(0, 250, 0, 25)
+notiftitle.Font = Enum.Font.GothamBold
+notiftitle.Text = "Title"
+notiftitle.TextColor3 = Color3.fromRGB(220, 220, 220)
+notiftitle.TextSize = 25
 notiftitle.TextXAlignment = Enum.TextXAlignment.Left
 
 local notiftext = Instance.new("TextLabel", notifUI)
-notiftext.Name = "notiftext"
+notiftext.Name = "Description"
 notiftext.BackgroundTransparency = 1
-notiftext.Position = UDim2.new(0.074, 0, 0.26, 0)
-notiftext.Size = UDim2.new(0, 177, 0, 113)
+notiftext.Position = UDim2.new(0.088, 0, 0.36, 0)
+notiftext.Size = UDim2.new(0, 250, 0, 60)
 notiftext.Font = Enum.Font.Gotham
-notiftext.Text = "Lorem ipsum"
+notiftext.Text = "Description"
+notiftext.TextColor3 = Color3.fromRGB(220, 220, 220)
+notiftext.TextSize = 20
 notiftext.TextWrapped = true
 notiftext.TextXAlignment = Enum.TextXAlignment.Left
 notiftext.TextYAlignment = Enum.TextYAlignment.Top
-notiftext.TextColor3 = Color3.fromRGB(178, 178, 178)
-notiftext.TextSize = 20
 
 local loadingBar = Instance.new("Frame", notifUI)
-loadingBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-loadingBar.BorderSizePixel = 0
-loadingBar.Position = UDim2.new(0, 0, 1, -4)
-loadingBar.Size = UDim2.new(1, 0, 0, 4)
-loadingBar.AnchorPoint = Vector2.new(0, 1)
+loadingBar.Name = "Bar"
+loadingBar.BackgroundColor3 = Color3.fromRGB(99, 99, 99)
+loadingBar.Position = UDim2.new(0.09, 0, 0, 0)
+loadingBar.Size = UDim2.new(0.82, 0,0, 1)
 
-function unexpected:notify(title, ...)
-    local args = {...}
-    local text = table.concat(args, " ")
-
-    table.insert(notificationQueue, {
-        title = tostring(title or "Notification"),
-        text = text
-    })
-
-    local total = #notificationQueue
-    if isNotif then
-        local currentTitle = notiftitle.Text:match("^(.-) %(%d+%)$") or notiftitle.Text
-        notiftitle.Text = string.format("%s (%d)", currentTitle, total + 1)
-    else
-        notifQueue()
-    end
-end
-
+-- Notification logic
 local notifPos = notifUI.Position
-function notifQueue()
+
+local function notifQueue()
 	if #notificationQueue == 0 then
 		isNotif = false
 
@@ -283,22 +446,24 @@ function notifQueue()
 			BackgroundTransparency = 1,
 			Position = notifPos + UDim2.new(0, 0, 0, 10),
 		})
+
 		for _, v in ipairs(notifUI:GetDescendants()) do
 			if v:IsA("TextLabel") then
 				TS:Create(v, TweenInfo.new(0.25), {TextTransparency = 1}):Play()
 			end
 		end
+
 		fadeOutTween:Play()
 
 		task.delay(0.3, function()
 			notifUI.Visible = false
+			notifUI.Position = notifPos
 			notifUI.BackgroundTransparency = 0
 			for _, v in ipairs(notifUI:GetDescendants()) do
 				if v:IsA("TextLabel") then
 					v.TextTransparency = 0
 				end
 			end
-			notifUI.Position = notifPos -- ← reset cleanly [upd: should be the best way?]
 		end)
 		return
 	end
@@ -308,8 +473,8 @@ function notifQueue()
 
 	local total = #notificationQueue + 1
 	notiftitle.Text = string.format("%s (%d)", tostring(data.title), total)
-	notiftext.Text = tostring(data.text or "")
-	loadingBar.Size = UDim2.new(1, 0, 0, 4)
+	notiftext.Text = tostring(data.text)
+	loadingBar.Size = UDim2.new(0.82, 0,0, 1)
 	notifUI.Visible = true
 
 	if total == 1 then
@@ -324,6 +489,7 @@ function notifQueue()
 			BackgroundTransparency = 0,
 			Position = notifPos,
 		}):Play()
+
 		for _, v in ipairs(notifUI:GetDescendants()) do
 			if v:IsA("TextLabel") then
 				TS:Create(v, TweenInfo.new(0.25), {TextTransparency = 0}):Play()
@@ -332,26 +498,35 @@ function notifQueue()
 	end
 
 	local barTween = TS:Create(loadingBar, TweenInfo.new(5, Enum.EasingStyle.Linear), {
-		Size = UDim2.new(0, 0, 0, 4)
+		Size = UDim2.new(0, 0, 0, 1)
 	})
 	barTween:Play()
 
 	task.delay(5, notifQueue)
 end
---#notificationEnd
+
+function unexpected:notify(title, ...)
+	local args = {...}
+	local text = table.concat(args, " ")
+
+	table.insert(notificationQueue, {
+		title = tostring(title or "Notification"),
+		text = text
+	})
+
+	if isNotif then
+		local currentTitle = notiftitle.Text:match("^(.-) %(%d+%)$") or notiftitle.Text
+		notiftitle.Text = string.format("%s (%d)", currentTitle, #notificationQueue + 1)
+	else
+		notifQueue()
+	end
+end
 
 --#inputs
-UIS.InputBegan:Connect(function(input, processed) -- ← i do think there's a better way on making this
-    if input.KeyCode == Enum.KeyCode.Semicolon then
-        task.wait(0.01)
-        command.Text = ""
-        predictor.Text = ""
-        command:CaptureFocus()
-    end
-end)
 
-command:GetPropertyChangedSignal("Text"):Connect(function()
-    local input = command.Text
+
+G2L["5"]:GetPropertyChangedSignal("Text"):Connect(function()
+    local input = G2L["5"].Text
     local cmdName = input:match("^%S+") or ""
     local suggestion = ""
 
@@ -371,12 +546,12 @@ command:GetPropertyChangedSignal("Text"):Connect(function()
         end
     end
 
-    predictor.Text = suggestion
+    G2L["5a"].Text = suggestion
 end)
 
-command.FocusLost:Connect(function(enterPressed)
+G2L["5"].FocusLost:Connect(function(enterPressed)
     if enterPressed then
-        local inputText = command.Text
+        local inputText = G2L["5"].Text
         local cmdName, argsText = inputText:match("^(%S+)%s*(.*)$")
         if not cmdName then return end
 
@@ -389,49 +564,34 @@ command.FocusLost:Connect(function(enterPressed)
             cmd.Execute(unpack(args))
         end
 
-        command.Text = ""
-        predictor.Text = ""
+        G2L["5"].Text = ""
+        G2L["5a"].Text = ""
     end
 end)
 --#inputsEnd
 
---#search
-local search = Instance.new("Frame")
-local searchBox = Instance.new("TextBox")
+-- StarterGui.public.Pill.MenuFrame.commandFrame.searchBar
+G2L["1c"] = Instance.new("TextBox", G2L["16"]);
+G2L["1c"]["CursorPosition"] = -1;
+G2L["1c"]["Name"] = [[searchBar]];
+G2L["1c"]["PlaceholderColor3"] = Color3.fromRGB(120, 120, 120);
+G2L["1c"]["BorderSizePixel"] = 0;
+G2L["1c"]["TextSize"] = 18;
+G2L["1c"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1c"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["1c"]["PlaceholderText"] = [[search a command]];
+G2L["1c"]["Size"] = UDim2.new(0, 278, 0, 41);
+G2L["1c"]["Position"] = UDim2.new(0.0885, 0, 0.17816, 0);
+G2L["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1c"]["Text"] = [[]];
+G2L["1c"]["BackgroundTransparency"] = 1;
 
-search.Name = "search"
-search.Parent = commandlist
-search.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-search.BorderColor3 = Color3.fromRGB(0, 0, 0)
-search.BorderSizePixel = 0
-search.Position = UDim2.new(0.550314486, -159, 1.76491225, -455)
-search.Size = UDim2.new(0, 286, 0, 31)
-search.Parent = commandlist
-
-local sStroke = Instance.new("UIStroke")
-sStroke.Color = Color3.fromRGB(60, 60, 60)
-sStroke.Thickness = 1
-sStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-sStroke.Parent = search
-
-searchBox.Parent = search
-searchBox.BackgroundColor3 = Color3.fromRGB(9, 9, 9)
-searchBox.BackgroundTransparency = 1
-searchBox.BorderSizePixel = 0
-searchBox.Position = UDim2.new(0.0471699312, 0, 0, 0)
-searchBox.Size = UDim2.new(0, 260, 0, 30)
-searchBox.Font = Enum.Font.Gotham
-searchBox.PlaceholderText = "Search a command"
-searchBox.Text = ""
-searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-searchBox.TextSize = 14
-searchBox.TextXAlignment = Enum.TextXAlignment.Left
-
-local function updateList(filter) -- ← debloat some lines here
+local function updateList(filter)
 	filter = filter:lower()
 	local all, visible = {}, {}
 
-	for _, c in ipairs(scrollinglist:GetChildren()) do
+	for _, c in ipairs(G2L["17"]:GetChildren()) do
 		if c:IsA("TextButton") then
 			table.insert(all, c)
 			if c.Visible then table.insert(visible, c) end
@@ -456,14 +616,179 @@ local function updateList(filter) -- ← debloat some lines here
 	end
 end
 
-searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-	updateList(searchBox.Text)
+G2L["1c"]:GetPropertyChangedSignal("Text"):Connect(function()
+	updateList(G2L["1c"].Text)
 end)
 --#searchEnd
 
+-- StarterGui.public.Pill.MenuFrame.infoFrame
+G2L["1d"] = Instance.new("Frame", G2L["9"]);
+G2L["1d"]["Visible"] = false;
+G2L["1d"]["BorderSizePixel"] = 0;
+G2L["1d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["1d"]["Size"] = UDim2.new(0, 339, 0, 348);
+G2L["1d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1d"]["Name"] = [[infoFrame]];
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.UIGradient
+G2L["1e"] = Instance.new("UIGradient", G2L["1d"]);
+G2L["1e"]["Rotation"] = -109;
+G2L["1e"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 0, 0)),ColorSequenceKeypoint.new(0.225, Color3.fromRGB(0, 0, 0)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(50, 0, 0))};
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.profile
+G2L["1f"] = Instance.new("ImageLabel", G2L["1d"]);
+G2L["1f"]["BorderSizePixel"] = 0;
+G2L["1f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+-- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["1f"]["Image"] = [[rbxassetid://12850203451]];
+G2L["1f"]["Size"] = UDim2.new(0, 100, 0, 100);
+G2L["1f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["1f"]["BackgroundTransparency"] = 1;
+G2L["1f"]["Name"] = [[profile]];
+G2L["1f"]["Position"] = UDim2.new(0.0885, 0, 0.18391, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.profile.Corner
+G2L["20"] = Instance.new("UICorner", G2L["1f"]);
+G2L["20"]["Name"] = [[Corner]];
+G2L["20"]["CornerRadius"] = UDim.new(1, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.Corner
+G2L["21"] = Instance.new("UICorner", G2L["1d"]);
+G2L["21"]["Name"] = [[Corner]];
+G2L["21"]["CornerRadius"] = UDim.new(0.1, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.name
+G2L["22"] = Instance.new("TextLabel", G2L["1d"]);
+G2L["22"]["BorderSizePixel"] = 0;
+G2L["22"]["TextSize"] = 20;
+G2L["22"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["22"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["22"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Italic);
+G2L["22"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["22"]["BackgroundTransparency"] = 1;
+G2L["22"]["Size"] = UDim2.new(0, 85, 0, 26);
+G2L["22"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["22"]["Text"] = LP.Name;
+G2L["22"]["Name"] = [[name]];
+G2L["22"]["Position"] = UDim2.new(0.43068, 0, 0.25287, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.status
+G2L["23"] = Instance.new("TextLabel", G2L["1d"]);
+G2L["23"]["BorderSizePixel"] = 0;
+G2L["23"]["TextSize"] = 16;
+G2L["23"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["23"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["23"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Italic);
+G2L["23"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["23"]["BackgroundTransparency"] = 1;
+G2L["23"]["Size"] = UDim2.new(0, 168, 0, 26);
+G2L["23"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["23"]["Text"] = [[using unexpected]];
+G2L["23"]["Name"] = [[status]];
+G2L["23"]["Position"] = UDim2.new(0.43068, 0, 0.32759, 0);
+
+G2L["24"] = Instance.new("TextLabel", G2L["1d"]);
+G2L["24"]["BorderSizePixel"] = 0;
+G2L["24"]["TextSize"] = 20;
+G2L["24"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["24"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["24"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["24"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["24"]["BackgroundTransparency"] = 1;
+G2L["24"]["Size"] = UDim2.new(0, 265, 0, 26);
+G2L["24"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["24"].Text = "this is wip"
+G2L["24"]["Name"] = [[position]];
+G2L["24"]["Position"] = UDim2.new(0.10914, 0, 0.52299, 0);
+
+G2L["25"] = Instance.new("TextLabel", G2L["1d"]);
+G2L["25"]["BorderSizePixel"] = 0;
+G2L["25"]["TextSize"] = 20;
+G2L["25"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["25"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["25"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["25"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["25"]["BackgroundTransparency"] = 1;
+G2L["25"]["Size"] = UDim2.new(0, 265, 0, 26);
+G2L["25"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["25"]["Text"] = "using hashed "..currentVersion;
+G2L["25"]["Name"] = [[uptime]];
+G2L["25"]["Position"] = UDim2.new(0.10914, 0, 0.5977, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.walkspeed
+G2L["26"] = Instance.new("TextLabel", G2L["1d"]);
+G2L["26"]["BorderSizePixel"] = 0;
+G2L["26"]["TextSize"] = 20;
+G2L["26"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["26"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["26"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["26"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["26"]["BackgroundTransparency"] = 1;
+G2L["26"]["Size"] = UDim2.new(0, 265, 0, 26);
+G2L["26"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["26"]["Text"] = HUM.WalkSpeed;
+G2L["26"]["Name"] = [[walkspeed]];
+G2L["26"]["Position"] = UDim2.new(0.10914, 0, 0.67241, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.jumppower
+G2L["27"] = Instance.new("TextLabel", G2L["1d"]);
+G2L["27"]["BorderSizePixel"] = 0;
+G2L["27"]["TextSize"] = 20;
+G2L["27"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["27"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["27"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["27"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
+G2L["27"]["BackgroundTransparency"] = 1;
+G2L["27"]["Size"] = UDim2.new(0, 265, 0, 26);
+G2L["27"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["27"]["Text"] = HUM.JumpPower;
+G2L["27"]["Name"] = [[jumppower]];
+G2L["27"]["Position"] = UDim2.new(0.10914, 0, 0.74713, 0);
+
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.infoBack
+G2L["28"] = Instance.new("ImageButton", G2L["1d"]);
+G2L["28"]["BorderSizePixel"] = 0;
+G2L["28"]["BackgroundTransparency"] = 1;
+-- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
+G2L["28"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["28"]["ImageColor3"] = Color3.fromRGB(100, 100, 100);
+G2L["28"]["Image"] = [[rbxassetid://10709812784]];
+G2L["28"]["Size"] = UDim2.new(0, 38, 0, 30);
+G2L["28"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["28"]["Name"] = [[infoBack]];
+G2L["28"]["Position"] = UDim2.new(0.0885, 0, 0.82759, 0);
+
+-- StarterGui.public.Pill.MenuFrame.infoFrame.infoBack.UIAspectRatioConstraint
+G2L["29"] = Instance.new("UIAspectRatioConstraint", G2L["28"]);
+
+-- StarterGui.public.Pill.MenuFrame.Label
+G2L["2a"] = Instance.new("TextLabel", G2L["9"]);
+G2L["2a"]["TextWrapped"] = true;
+G2L["2a"]["ZIndex"] = 2;
+G2L["2a"]["TextSize"] = 17;
+G2L["2a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+G2L["2a"]["TextYAlignment"] = Enum.TextYAlignment.Bottom;
+G2L["2a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["2a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["2a"]["TextColor3"] = Color3.fromRGB(100, 100, 100);
+G2L["2a"]["BackgroundTransparency"] = 1;
+G2L["2a"]["Size"] = UDim2.new(0, 163, 0, 19);
+G2L["2a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["2a"]["Text"] = [[wip]];
+G2L["2a"]["Name"] = [[Label]];
+G2L["2a"]["Position"] = UDim2.new(0.29499, 0, 0.07471, 0);
+
 --#utils
 local configFile = "unexpected_config.json"
-
 local defaultConfig = {
 	keepUX = true,
 }
@@ -510,133 +835,246 @@ function UX_config()
 		writefile(configFile, HS:JSONEncode(toSave))
 	end)
 	if not success then
-		unexpected:notify("[unexpected]", err)
+		unexpected:notify("unexpected", err)
 	end
 end
 --#utilsEnd
 
---#uiToggles
-local isVisible = false
-local fadeTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+--#imports
+local MENU = G2L["2"]:FindFirstChild("Menu")
+local CLI = G2L["2"]:FindFirstChild("CLI")
+local MENUFRAME = G2L["2"]:WaitForChild("MenuFrame")
+local LASTFOCUSED = tick()
+local HIDDEN = false
 
-local indicatorCircle = Instance.new("Frame")
-indicatorCircle.Size = MOBILE and UDim2.new(0, 32, 0, 32) or UDim2.new(0, 10, 0, 10)
-indicatorCircle.Position = UDim2.new(1, -40, 1, -40)
-indicatorCircle.AnchorPoint = Vector2.new(1, 1)
-indicatorCircle.BackgroundColor3 = Color3.fromRGB(0, 85, 198)
-indicatorCircle.BorderSizePixel = 0
-indicatorCircle.Visible = true
-indicatorCircle.ZIndex = 999
-indicatorCircle.Parent = gui
-indicatorCircle.BackgroundTransparency = 0.1
-indicatorCircle.Name = "MobileIndicator"
-indicatorCircle.ClipsDescendants = true
-indicatorCircle.Active = true
-Instance.new("UICorner", indicatorCircle)
+local indicator = Instance.new("ImageButton")
+indicator.Size = UDim2.new(0, 20, 0, 20)
+indicator.Position = UDim2.new(0, 20,1, -40)
+indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+indicator.Visible = false
+indicator.ZIndex = 20
+indicator.Parent = G2L["2"].Parent
+indicator.BorderSizePixel = 0
+Instance.new("UICorner", indicator).CornerRadius = UDim.new(1, 0)
+--#importesEnd
 
-local function fadeUI(show)
-	isVisible = show
-	if show then
-		commandbar.Visible = true
-		indicatorCircle.Visible = false
-		TS:Create(commandbar, fadeTweenInfo, {BackgroundTransparency = 0}):Play()
-		for _, v in ipairs(commandbar:GetDescendants()) do
-			if v:IsA("TextLabel") or v:IsA("TextBox") or v:IsA("TextButton") then
-				TS:Create(v, fadeTweenInfo, {TextTransparency = 0}):Play()
-			elseif v:IsA("UIStroke") then
-				TS:Create(v, fadeTweenInfo, {Transparency = 0}):Play()
-			end
+--#initiliaze
+G2L["2"].AnchorPoint = Vector2.new(0.5, 0.5)
+G2L["2"].Position = UDim2.new(0.5, 0, 1, -150)
+G2L["2"].Visible = false
+MENUFRAME.AnchorPoint = Vector2.new(0.5, 1)
+MENUFRAME.Position = UDim2.new(0.5, 0, 1, -80)
+MENUFRAME.Size = UDim2.new(0, 339, 0, 0)
+--#initializeEnd
+
+local MENUON, HOVERED, shithover = false, false, false
+local MENUFRAMES = {
+	command = MENUFRAME:WaitForChild("commandFrame"),
+	info = MENUFRAME:WaitForChild("infoFrame")
+}
+local MENUS = {
+	MENUFRAME:WaitForChild("cmdsButton"),
+	MENUFRAME:WaitForChild("infoButton"),
+	MENUFRAME:WaitForChild("discordButton")
+}
+
+--#fadesHandler
+local function buttonTP(button, target)
+	local prop = button:IsA("ImageButton") and "ImageTransparency" or "TextTransparency"
+	TS:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { [prop] = target }):Play()
+end
+
+local function fadeIn(frame)
+	frame.Visible = true
+	for _, c in ipairs(frame:GetDescendants()) do
+		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
+			c.TextTransparency = 1
+			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 0 }):Play()
+		elseif c:IsA("ImageLabel") or c:IsA("ImageButton") then
+			c.ImageTransparency = 1
+			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0 }):Play()
 		end
-	else
-		local fadeOut = TS:Create(commandbar, fadeTweenInfo, {BackgroundTransparency = 1})
-		fadeOut:Play()
-		for _, v in ipairs(commandbar:GetDescendants()) do
-			if v:IsA("TextLabel") or v:IsA("TextBox") or v:IsA("TextButton") then
-				TS:Create(v, fadeTweenInfo, {TextTransparency = 1}):Play()
-			elseif v:IsA("UIStroke") then
-				TS:Create(v, fadeTweenInfo, {Transparency = 1}):Play()
-			end
-		end
-		task.delay(0.26, function()
-			commandbar.Visible = false
-			indicatorCircle.Visible = true
-		end)
 	end
 end
 
-local dragging, dragInput, dragStart, startPos
-indicatorCircle.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = indicatorCircle.Position
+local function fadeOut(frame)
+	for _, c in ipairs(frame:GetDescendants()) do
+		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
+			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 1 }):Play()
+		elseif c:IsA("ImageLabel") or c:IsA("ImageButton") then
+			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 1 }):Play()
+		end
+	end
+	task.delay(0.2, function() frame.Visible = false end)
+end
 
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
+RS.Heartbeat:Connect(function()
+	local m = LP:GetMouse()
+	local mp, pos, size = Vector2.new(m.X, m.Y), G2L["2"].AbsolutePosition, G2L["2"].AbsoluteSize
+	shithover = mp.X >= pos.X and mp.X <= pos.X + size.X and mp.Y >= pos.Y and mp.Y <= pos.Y + size.Y
+end)
+
+--#fucktween
+local function SHS(hovered)
+	if MOBILE then
+		HOVERED = true
+		G2L["2"].Size, G2L["5"].Size = UDim2.new(0, 339, 0, 71), UDim2.new(0, 230, 0, 54)
+		G2L["6"].ImageTransparency = 0
+		buttonTP(MENU, 0)
+		return
+	end
+	if MENUON and hovered then
+		HOVERED = true
+		TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
+		TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 230, 0, 54) }):Play()
+		buttonTP(MENU, 0)
+		return
+	end
+	HOVERED = hovered
+	local gSize = hovered and 339 or 218
+	local cSize = hovered and 230 or 167
+	TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, gSize, 0, 71) }):Play()
+	TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, cSize, 0, 54) }):Play()
+	buttonTP(MENU, hovered and 0 or 1)
+end
+
+G2L["2"].MouseEnter:Connect(function()
+	shithover = true
+	LASTFOCUSED = tick()
+	SHS(true)
+end)
+
+G2L["2"].MouseLeave:Connect(function()
+	task.delay(0.05, function()
+		shithover = false
+		if not CLI:IsFocused() and not MENUON and not shithover then SHS(false) end
+	end)
+end)
+
+MENU.MouseButton1Click:Connect(function()
+	LASTFOCUSED = tick()
+	MENUON = not MENUON
+	if MENUON then
+		MENUFRAME.Size, MENUFRAME.Visible = UDim2.new(0, 339, 0, 0), true
+		TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
+		TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 230, 0, 54) }):Play()
+		TS:Create(MENUFRAME, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 348) }):Play()
+		buttonTP(MENU, 0)
+	else
+		local collapse = TS:Create(MENUFRAME, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 0) })
+		collapse:Play()
+		collapse.Completed:Once(function()
+			if not MENUON then MENUFRAME.Visible = false end
 		end)
+		SHS(HOVERED)
 	end
 end)
 
-indicatorCircle.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
+MENUS[1].MouseButton1Click:Connect(function()
+	for _, b in ipairs(MENUS) do b.Visible = false end
+	fadeIn(MENUFRAMES.command)
+end)
+
+MENUS[2].MouseButton1Click:Connect(function()
+	for _, b in ipairs(MENUS) do b.Visible = false end
+	fadeIn(MENUFRAMES.info)
+end)
+
+MENUFRAMES.command:WaitForChild("commandBack").MouseButton1Click:Connect(function()
+	fadeOut(MENUFRAMES.command)
+	task.delay(0.1, function() for _, b in ipairs(MENUS) do b.Visible = true end end)
+end)
+
+MENUFRAMES.info:WaitForChild("infoBack").MouseButton1Click:Connect(function()
+	fadeOut(MENUFRAMES.info)
+	task.delay(0.1, function() for _, b in ipairs(MENUS) do b.Visible = true end end)
+end)
+
+local function hidePILL()
+	for _, c in ipairs(G2L["2"]:GetDescendants()) do
+		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
+			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 1 }):Play()
+		elseif c:IsA("ImageLabel") or c:IsA("ImageButton") then
+			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 1 }):Play()
+		end
+	end
+	local shrink = TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 0, 0, 0) })
+	shrink:Play()
+	shrink.Completed:Once(function()
+		G2L["2"].Visible = false
+		indicator.Visible = true
+	end)
+end
+
+RS.Heartbeat:Connect(function()
+	if not CLI:IsFocused() and not MENUON and tick() - LASTFOCUSED > 10 and not HIDDEN then
+		HIDDEN = true
+		hidePILL()
 	end
 end)
 
-indicatorCircle.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-		fadeUI(true)
-		task.delay(10, function()
-			if not command:IsFocused() then
-				fadeUI(false)
+local oneMenu = false
+local function showPILL(yn)
+	G2L["2"].Visible = true
+	G2L["2"].Size = UDim2.new(0, 218, 0, 71)
+	HIDDEN = false
+	LASTFOCUSED = tick()
+	indicator.Visible = false
+	if MOBILE and not MENUON then SHS(true) end
+	for _, c in ipairs(G2L["2"]:GetDescendants()) do
+		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
+			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 0 }):Play()
+		elseif c:IsA("ImageLabel") or c:IsA("ImageButton") then
+			if not oneMenu then
+				c.ImageTransparency = 1
+				oneMenu = true
+			elseif yn == 1 then
+				TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0 }):Play()
+			else
+				c.ImageTransparency = 1
 			end
-		end)
+		end
 	end
-end)
+end
 
-UIS.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		local delta = input.Position - dragStart
-		indicatorCircle.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
+indicator.MouseButton1Click:Connect(function() showPILL() end)
+
+CLI.Focused:Connect(function() LASTFOCUSED = tick() end)
+
+CLI.FocusLost:Connect(function()
+	LASTFOCUSED = tick()
+	task.delay(0.05, function()
+		if not shithover and not MENUON then SHS(false) end
+	end)
 end)
 
 UIS.InputBegan:Connect(function(input, processed)
 	if not processed and input.KeyCode == Enum.KeyCode.Semicolon then
-		command:CaptureFocus()
+		task.wait(0.01)
+		CLI.Text, G2L["5a"].Text = "", ""
+		CLI:CaptureFocus()
+		LASTFOCUSED = tick()
+		showPILL(1)
+		SHS(true)
+		TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
+		TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 230, 0, 54) }):Play()
+		buttonTP(MENU, 0)
 	end
 end)
 
-command.Focused:Connect(function()
-	fadeUI(true)
-end)
-
-local lastFocusLost = 0
-
-command.FocusLost:Connect(function()
-	lastFocusLost = tick()
-	task.delay(2, function()
-		if tick() - lastFocusLost >= 1.95 then
-			if not command:IsFocused() and command.Text == "" then
-				fadeUI(false)
-			end
+UIS.InputEnded:Connect(function(input, processed)
+	if input.KeyCode == Enum.KeyCode.Semicolon then
+		HOVERED = false
+		if not MENUON and not CLI:IsFocused() then
+			TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 218, 0, 71) }):Play()
+			TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 167, 0, 54) }):Play()
+			buttonTP(MENU, 1)
+		elseif MENUON then
+			G2L["2"].Size, CLI.Size = UDim2.new(0, 339, 0, 71), UDim2.new(0, 230, 0, 54)
+			buttonTP(MENU, 0)
 		end
-	end)
-end)
-
-command.Focused:Connect(function()
-	if not isVisible then
-		fadeUI(true)
 	end
 end)
---#uiTogglesEnd
 
 --#commands
 unexpected:AddCommand("unexspy", "Remote spy", function()
@@ -645,31 +1083,26 @@ unexpected:AddCommand("unexspy", "Remote spy", function()
 end, {"remotespy"}, nil)
 
 unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
-    local target
-    if targetName:lower() == "random" then
-        local players = PLRS:GetPlayers()
-        local candidates = {}
-        for _, player in pairs(players) do
-            if player ~= LP then
-                table.insert(candidates, player)
-            end
-        end
-        if #candidates > 0 then
-            target = candidates[math.random(#candidates)]
-        else
-            return unexpected:notify("goto", "No players available, try again.")
-        end
-    else
-        for _, player in pairs(PLRS:GetPlayers()) do
-            if player.DisplayName:lower() == targetName:lower() or player.Name:lower() == targetName:lower() then
-                target = player
-                break
-            end
-        end
-    end
-    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        HRP.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-    end
+	local target
+	if targetName:lower() == "random" then
+		local candidates = {}
+		for _, player in pairs(PLRS:GetPlayers()) do
+			if player ~= LP then table.insert(candidates, player) end
+		end
+		if #candidates == 0 then return unexpected:notify("goto", "No players available, try again.") end
+		target = candidates[math.random(#candidates)]
+	else
+		for _, player in pairs(PLRS:GetPlayers()) do
+			local name = targetName:lower()
+			if player.Name:lower() == name or player.DisplayName:lower() == name then
+				target = player
+				break
+			end
+		end
+	end
+	if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+		HRP.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+	end
 end, nil, {"playerName"})
 
 local noclip
@@ -699,7 +1132,7 @@ end)
 unexpected:AddCommand("clearhats", "Removes all hats", function()
     for _, item in ipairs(CHAR:GetChildren()) do
         if item:IsA("Accessory") then
-            item:Destroy()
+            item:Destrofy()
         end
     end
 end)
@@ -731,7 +1164,6 @@ unexpected:AddCommand("glide", "Enable glide mode (slow fall)", function()
     sv.Velocity = Vector3.new(0, -10, 0)
     sv.Parent = HRP or CHAR.PrimaryPart
 end)
-
 
 unexpected:AddCommand("unglide", "Disable glide mode", function()
     local glide = HRP:FindFirstChild("GlideVelocity")
@@ -804,7 +1236,6 @@ unexpected:AddCommand("unstun", "Remove fake stun", function()
     HUM.PlatformStand = false
 end)
 
-
 unexpected:AddCommand("jump", "Forces local jump", function()
     HUM:ChangeState(Enum.HumanoidStateType.Jumping)
 end)
@@ -846,34 +1277,7 @@ unexpected:AddCommand("notify", "Notify all arguments", function(...)
 end, nil, {"..."})
 
 unexpected:AddCommand("cmds", "Shows commands", function()
-	local showing = not commandlist.Visible
-	commandlist.Visible = true
-
-	local t = showing and 0 or 1
-	local offset = showing and -10 or 10
-
-	for _, obj in ipairs(commandlist:GetDescendants()) do
-		if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
-			pcall(function()
-				TS:Create(obj, TweenInfo.new(0.25), {TextTransparency = t}):Play()
-			end)
-		elseif obj:IsA("UIStroke") then
-			TS:Create(obj, TweenInfo.new(0.25), {Transparency = t}):Play()
-		elseif obj:IsA("Frame") then
-			TS:Create(obj, TweenInfo.new(0.25), {BackgroundTransparency = t}):Play()
-		end
-	end
-
-	TS:Create(commandlist, TweenInfo.new(0.25), {
-		BackgroundTransparency = t,
-		Position = commandlist.Position + UDim2.new(0, 0, 0, offset)
-	}):Play()
-
-	if not showing then
-		task.delay(0.26, function()
-			commandlist.Visible = false
-		end)
-	end
+	unexpected:notify("unexpected", "Check the menu.")
 end)
 
 unexpected:AddCommand("rejoin", "Rejoins the current server", function()
@@ -894,139 +1298,114 @@ unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", func
 	unexpected:notify("keepUX", "Now set to:", tostring(getgenv().keepUX))
 end, nil, {"true/false"})
 
-local flying, flyConnA, flyConnB = false, nil, nil
+local flying, connA, connB = false
 unexpected:AddCommand("fly", "Enable flying", function(spd)
-    if flying then return unexpected:notify("flying", "Unfly first before changing speed") end
-    
-    local spd = tonumber(spd) or 3
-    flying = true
-    HUM.PlatformStand = true
-    bv = Instance.new("BodyVelocity", HRP)
-    bg = Instance.new("BodyGyro", HRP)
-    bv.MaxForce = Vector3.one * 1e6
-    bg.MaxTorque = Vector3.one * 1e6
-    bg.P = 1e4
-    local input = {w = 0, s = 0, a = 0, d = 0, up = 0, down = 0}
-    if MOBILE then
-    	HUM.StateChanged:Connect(function(_, state)
-    		if state == Enum.HumanoidStateType.Jumping then
-    			input.up = 1
-    			task.delay(0.3, function() input.up = 0 end)
-    		end
-    	end)
-    else
-    	flyConnA = UIS.InputBegan:Connect(function(i, g)
-    		if g then return end
-    		local k = i.KeyCode
-    		if k == Enum.KeyCode.W then input.w = 1 end
-    		if k == Enum.KeyCode.S then input.s = -1 end
-    		if k == Enum.KeyCode.A then input.a = -1 end
-    		if k == Enum.KeyCode.D then input.d = 1 end
-    		if k == Enum.KeyCode.Space then input.up = 1 end
-    		if k == Enum.KeyCode.LeftShift then input.down = -1 end
-    	end)
-    
-    	flyConnB = UIS.InputEnded:Connect(function(i)
-    		local k = i.KeyCode
-    		if k == Enum.KeyCode.W then input.w = 0 end
-    		if k == Enum.KeyCode.S then input.s = 0 end
-    		if k == Enum.KeyCode.A then input.a = 0 end
-    		if k == Enum.KeyCode.D then input.d = 0 end
-    		if k == Enum.KeyCode.Space then input.up = 0 end
-    		if k == Enum.KeyCode.LeftShift then input.down = 0 end
-    	end)
-    end
+	if flying then return unexpected:notify("flying", "Unfly first before changing speed") end
 
-    task.spawn(function()
-    	while flying and HRP and CAM do
-    		task.wait()
-    		local moveVec
-    		if MOBILE then
-    			local dir = CAM.CFrame.LookVector
-    			local move = HUM.MoveDirection + Vector3.new(0, input.up, 0)
-    			moveVec = move.Magnitude > 0 and CFrame.new(Vector3.zero, dir):VectorToWorldSpace(move.Unit) * spd * 10 or Vector3.zero
-    		else
-    			local move = Vector3.new(input.a + input.d, input.up + input.down, -(input.w + input.s))
-    			moveVec = CAM.CFrame:VectorToWorldSpace(move) * spd * 10
-    		end
-    		bv.Velocity = moveVec
-    		bg.CFrame = CAM.CFrame
-    		HUM:ChangeState(Enum.HumanoidStateType.FallingDown)
-    	end
-    end)
-end, nil, {"speed"})
+	flying = true
+	spd = tonumber(spd) or 3
+	HUM.PlatformStand = true
 
-unexpected:AddCommand("unfly", "Disable flying", function()
-    flying = false
-    HUM.PlatformStand = false
-    for _, x in ipairs({flyConnA, flyConnB}) do if x then pcall(function() x:Disconnect() end) end end
-    for _, x in ipairs({bv, bg}) do if x then pcall(function() x:Destroy() end) end end
-    task.wait()
-    HUM:ChangeState(Enum.HumanoidStateType.Jumping)
+	local bv = Instance.new("BodyVelocity", HRP)
+	local bg = Instance.new("BodyGyro", HRP)
+	bv.MaxForce, bg.MaxTorque, bg.P = Vector3.one * 1e6, Vector3.one * 1e6, 1e4
+
+	local vertical = 0
+	if not MOBILE then
+		local keys = {
+			[Enum.KeyCode.Space] = 1,
+			[Enum.KeyCode.LeftShift] = -1,
+		}
+		connA = UIS.InputBegan:Connect(function(i, g)
+			if not g and keys[i.KeyCode] then vertical = keys[i.KeyCode] end
+		end)
+		connB = UIS.InputEnded:Connect(function(i)
+			if keys[i.KeyCode] then vertical = 0 end
+		end)
+	else
+		HUM.StateChanged:Connect(function(_, state)
+			if state == Enum.HumanoidStateType.Jumping then
+				vertical = 1
+				task.delay(0.3, function() vertical = 0 end)
+			end
+		end)
+	end
+
+	task.spawn(function()
+		while flying and HRP and CAM do
+			task.wait()
+			local move = HUM.MoveDirection + Vector3.new(0, vertical, 0)
+			bv.Velocity = move.Magnitude > 0 and move.Unit * spd * 10 or Vector3.zero
+			bg.CFrame = CAM.CFrame
+			HUM:ChangeState(Enum.HumanoidStateType.FallingDown)
+		end
+	end)
 end)
 
-local afConn, lastSafe
+unexpected:AddCommand("unfly", "Disable flying", function()
+	flying = false
+	HUM.PlatformStand = false
+	for _, x in ipairs({connA, connB}) do if x then pcall(x.Disconnect, x) end end
+	for _, x in ipairs({bv, bg}) do if x then pcall(x.Destroy, x) end end
+	task.wait()
+	HUM:ChangeState(Enum.HumanoidStateType.Jumping)
+end)
+
+local afConn, lastSafe, count = nil, nil, 0
 unexpected:AddCommand("antifling", "Stops flings via velocity detection", function()
-    if afConn then return end
-    afConn = RS.Heartbeat:Connect(function()
-        local lv, av = HRP.AssemblyLinearVelocity, HRP.AssemblyAngularVelocity
-        if lv.Magnitude > 250 or av.Magnitude > 250 then
-            HRP.AssemblyLinearVelocity = Vector3.zero
-            HRP.AssemblyAngularVelocity = Vector3.zero
-            if lastSafe then HRP.CFrame = lastSafe end
-        elseif lv.Magnitude < 50 and av.Magnitude < 50 then
-            lastSafe = HRP.CFrame
-        end
-    end)
+	if afConn then return end
+	afConn = RS.Heartbeat:Connect(function()
+		local lv, av = HRP.AssemblyLinearVelocity, HRP.AssemblyAngularVelocity
+		if lv.Magnitude > 250 or av.Magnitude > 250 then
+			count += 1
+			if count >= 2 then
+				HRP.AssemblyLinearVelocity = Vector3.zero
+				HRP.AssemblyAngularVelocity = Vector3.zero
+				if lastSafe then HRP.CFrame = lastSafe end
+				count = 0
+			end
+		else
+			count = 0
+			if lv.Magnitude < 10 and av.Magnitude < 10 then
+				lastSafe = HRP.CFrame
+			end
+		end
+	end)
 end)
 
 unexpected:AddCommand("unantifling", "Disables fling protection", function()
     if afConn then afConn:Disconnect() afConn = nil end
 end)
 
-local banging = false
-local conn
+local banging, conn = false
 unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
-    if banging then return end
-    local target
-    for _, p in pairs(PLRS:GetPlayers()) do
-        if p.DisplayName:lower() == name:lower() or p.Name:lower() == name:lower() then
-            target = p
-            break
-        end
-    end
-    if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
+	if banging then return end
+	local target = table.find(PLRS:GetPlayers(), function(p)
+		local n = name:lower()
+		return p.Name:lower() == n or p.DisplayName:lower() == n
+	end)
+	if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
 
-    local speed = tonumber(speedArg) or 5
-    banging = true
-    local thrp = target.Character.HumanoidRootPart
-    local backDist, fwdDist = 2, 1
-    local t, inwards = 0, true
+	local speed, thrp = tonumber(speedArg) or 5, target.Character.HumanoidRootPart
+	local t, inwards = 0, true
+	banging = true
 
-    conn = RS.Heartbeat:Connect(function(dt)
-        if not banging then
-            conn:Disconnect()
-            conn = nil
-            return
-        end
-        local cf, lv = thrp.CFrame, thrp.CFrame.LookVector.Unit
-        local backPos = cf.Position - lv * backDist
-        local inPos = cf.Position - lv * (backDist - fwdDist)
-        local backCf = CFrame.new(backPos, cf.Position)
-        local inCf = CFrame.new(inPos, cf.Position)
+	conn = RS.Heartbeat:Connect(function(dt)
+		if not banging then conn:Disconnect() conn = nil return end
+		local lv = thrp.CFrame.LookVector.Unit
+		local back = thrp.Position - lv * 2
+		local front = thrp.Position - lv
+		local cf = CFrame.new(inwards and front or back, thrp.Position)
 
-        t = math.min(t + dt * speed, 1)
-        HRP.CFrame = HRP.CFrame:Lerp(inwards and inCf or backCf, t)
-        if t >= 1 then
-            inwards = not inwards
-            t = 0
-        end
-    end)
-end, nil, {"playerName", "speed"})
+		t = math.min(t + dt * speed, 1)
+		HRP.CFrame = HRP.CFrame:Lerp(cf, t)
+		if t >= 1 then inwards = not inwards t = 0 end
+	end)
+end)
 
 unexpected:AddCommand("unbang", "Stop banging", function()
-    banging = false
-    if conn then conn:Disconnect() conn = nil end
+	banging = false
+	conn = conn and conn:Disconnect()
 end)
 
 unexpected:AddCommand("antiafk", "Never get kicked", function()
@@ -1041,6 +1420,14 @@ end, nil, {...})
 
 --#locales
 UX_rconfig()
+showPILL()
+
+if MOBILE then
+    SHS(true)
+    G2L["2"].Size = UDim2.new(0, 339, 0, 71)
+    G2L["5"].Size = UDim2.new(0, 230, 0, 54)
+    G2L["6"].ImageTransparency = 0
+end
 
 local tpCHECK = false
 LP.OnTeleport:Connect(function(State)
@@ -1049,4 +1436,17 @@ LP.OnTeleport:Connect(function(State)
 		queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/source'))()")
 	end
 end)
+
+task.spawn(function()
+    local success, result = pcall(function() return HS:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/version")) end)
+    if success and result and typeof(result) == "table" then
+        if result.version ~= currentVersion then
+            unexpected:notify("unexpected", "You are using an old version (current: " .. currentVersion .. ", latest: " .. result.version .. ")")
+		end
+		if result.shout ~= "" then
+			unexpected:notify("unexpected", result.shout)
+		end
+    end
+end)
+
 --#localesEnd
