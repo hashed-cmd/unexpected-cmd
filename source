@@ -250,19 +250,16 @@ G2L["13"]["Name"] = [[infoButton]];
 G2L["13"]["Visible"] = true;
 G2L["13"]["Position"] = UDim2.new(0.0885, 0, 0.55388, 0);
 
-
 -- StarterGui.public.Pill.MenuFrame.infoButton.Corner
 G2L["14"] = Instance.new("UICorner", G2L["13"]);
 G2L["14"]["Name"] = [[Corner]];
 G2L["14"]["CornerRadius"] = UDim.new(0.3, 0);
-
 
 -- StarterGui.public.Pill.MenuFrame.infoButton.Stroke
 G2L["15"] = Instance.new("UIStroke", G2L["13"]);
 G2L["15"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
 G2L["15"]["Name"] = [[Stroke]];
 G2L["15"]["Color"] = Color3.fromRGB(50, 50, 50);
-
 
 -- StarterGui.public.Pill.MenuFrame.commandFrame
 G2L["16"] = Instance.new("Frame", G2L["9"]);
@@ -273,7 +270,6 @@ G2L["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["16"]["Name"] = [[commandFrame]];
 G2L["16"]["BackgroundTransparency"] = 1;
 G2L["16"]["Visible"] = false;
-
 
 -- StarterGui.public.Pill.MenuFrame.commandFrame.buttonList
 G2L["17"] = Instance.new("ScrollingFrame", G2L["16"]);
@@ -302,7 +298,6 @@ G2L["19"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["19"]["Text"] = [[command / command]];
 G2L["19"]["Name"] = [[commandExample]];
 G2L["19"]["Visible"] = false;
-
 
 -- StarterGui.public.Pill.MenuFrame.commandFrame.commandBack
 G2L["1a"] = Instance.new("ImageButton", G2L["16"]);
@@ -555,7 +550,6 @@ function unexpected:notify(title, ...)
 end
 
 --#inputs
-
 G2L["5"]:GetPropertyChangedSignal("Text"):Connect(function()
 	local input = G2L["5"].Text
 	local cmdName = string.match(input, "^%S+") or ""
@@ -661,12 +655,10 @@ G2L["1d"]["Size"] = UDim2.new(0, 339, 0, 348);
 G2L["1d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["1d"]["Name"] = [[infoFrame]];
 
-
 -- StarterGui.public.Pill.MenuFrame.infoFrame.UIGradient
 G2L["1e"] = Instance.new("UIGradient", G2L["1d"]);
 G2L["1e"]["Rotation"] = -109;
 G2L["1e"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 0, 0)),ColorSequenceKeypoint.new(0.225, Color3.fromRGB(0, 0, 0)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(50, 0, 0))};
-
 
 -- StarterGui.public.Pill.MenuFrame.infoFrame.profile
 G2L["1f"] = Instance.new("ImageLabel", G2L["1d"]);
@@ -680,18 +672,15 @@ G2L["1f"]["BackgroundTransparency"] = 1;
 G2L["1f"]["Name"] = [[profile]];
 G2L["1f"]["Position"] = UDim2.new(0.0885, 0, 0.18391, 0);
 
-
 -- StarterGui.public.Pill.MenuFrame.infoFrame.profile.Corner
 G2L["20"] = Instance.new("UICorner", G2L["1f"]);
 G2L["20"]["Name"] = [[Corner]];
 G2L["20"]["CornerRadius"] = UDim.new(1, 0);
 
-
 -- StarterGui.public.Pill.MenuFrame.infoFrame.Corner
 G2L["21"] = Instance.new("UICorner", G2L["1d"]);
 G2L["21"]["Name"] = [[Corner]];
 G2L["21"]["CornerRadius"] = UDim.new(0.1, 0);
-
 
 -- StarterGui.public.Pill.MenuFrame.infoFrame.name
 G2L["22"] = Instance.new("TextLabel", G2L["1d"]);
@@ -707,7 +696,6 @@ G2L["22"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["22"]["Text"] = LP.Name;
 G2L["22"]["Name"] = [[name]];
 G2L["22"]["Position"] = UDim2.new(0.43068, 0, 0.25287, 0);
-
 
 -- StarterGui.public.Pill.MenuFrame.infoFrame.status
 G2L["23"] = Instance.new("TextLabel", G2L["1d"]);
@@ -752,7 +740,6 @@ G2L["25"]["Text"] = "using hashed "..currentVersion;
 G2L["25"]["Name"] = [[uptime]];
 G2L["25"]["Position"] = UDim2.new(0.10914, 0, 0.5977, 0);
 
-
 -- StarterGui.public.Pill.MenuFrame.infoFrame.walkspeed
 G2L["26"] = Instance.new("TextLabel", G2L["1d"]);
 G2L["26"]["BorderSizePixel"] = 0;
@@ -768,7 +755,6 @@ G2L["26"]["Text"] = HUM.WalkSpeed;
 G2L["26"]["Name"] = [[walkspeed]];
 G2L["26"]["Position"] = UDim2.new(0.10914, 0, 0.67241, 0);
 
-
 -- StarterGui.public.Pill.MenuFrame.infoFrame.jumppower
 G2L["27"] = Instance.new("TextLabel", G2L["1d"]);
 G2L["27"]["BorderSizePixel"] = 0;
@@ -783,7 +769,6 @@ G2L["27"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["27"]["Text"] = HUM.JumpPower;
 G2L["27"]["Name"] = [[jumppower]];
 G2L["27"]["Position"] = UDim2.new(0.10914, 0, 0.74713, 0);
-
 
 -- StarterGui.public.Pill.MenuFrame.infoFrame.infoBack
 G2L["28"] = Instance.new("ImageButton", G2L["1d"]);
@@ -1072,9 +1057,7 @@ local function showPILL(yn)
 end
 
 indicator.MouseButton1Click:Connect(function() showPILL() end)
-
 CLI.Focused:Connect(function() LASTFOCUSED = os.clock() end)
-
 CLI.FocusLost:Connect(function()
 	LASTFOCUSED = os.clock()
 	task.delay(0.05, function()
