@@ -12,6 +12,12 @@ GS = cloneref(game:GetService("GuiService"))
 LP = cloneref(PLRS.LocalPlayer)
 CHAR = LP.Character or LP.CharacterAdded:Wait() 
 
+LP.CharacterAdded:Connect(function(c)
+	CHAR = c
+	HUM = cloneref(c:WaitForChild("Humanoid"))
+	HRP = cloneref(c:WaitForChild("HumanoidRootPart"))
+end)
+
 local function randomString(length, charset)
 	length = length or math.random(10, 20)
 	charset = charset or "abcdefghijklmnopqRStuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -26,8 +32,7 @@ end
 
 local unexspy = Instance.new("ScreenGui")
 unexspy.Name = randomString()
-unexspy.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-unexspy.Parent = COREGUI
+unexspy.Parent = gethui() or COREGUI
 
 local Main = Instance.new("Frame")
 Main.Position = UDim2.new(0.5, -265, 0.5, -142)
@@ -39,16 +44,15 @@ Main.Parent = unexspy
 
 local dragging, dragInput, dragStart, startPos
 Main.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = Main.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+	dragging = true
+	dragStart = input.Position
+	startPos = Main.Position
+	input:GetPropertyChangedSignal("UserInputState"):Connect(function()
+		if input.UserInputState == Enum.UserInputState.End then
+			dragging = false
+		end
+	end)
 end)
 
 Main.InputChanged:Connect(function(input)
@@ -58,9 +62,9 @@ Main.InputChanged:Connect(function(input)
 end)
 
 UIS.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
+	if dragging and input == dragInput then
 		local delta = input.Position - dragStart
-		Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		Main.Position = Main.Position + UDim2.fromOffset(delta.X, delta.Y)
 	end
 end)
 
