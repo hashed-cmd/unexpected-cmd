@@ -2,13 +2,12 @@ if unexpected_LOAD then return end
 pcall(function() getgenv().unexpected_LOAD = true end)
 
 function missing(t, f, fallback)
-    if type(f) == t then return f end
-    return fallback
+	return typeof(f) == t and f or fallback
 end
 
 --#core
 cloneref = missing("function", cloneref, function(...) return ... end)
-queueteleport =  missing("function", queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport))
+queueteleport = missing("function", queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport))
 --#coreEnd
 
 --#imports
@@ -28,9 +27,15 @@ MOBILE = UIS.TouchEnabled
 --#importsEnd
 
 --#importFuncs
-CHAR = LP.Character or LP.CharacterAdded:Wait() 
+CHAR = LP.Character or LP.CharacterAdded:Wait()
 HUM = cloneref(CHAR:WaitForChild("Humanoid"))
 HRP = cloneref(CHAR:WaitForChild("HumanoidRootPart"))
+
+LP.CharacterAdded:Connect(function(c)
+	CHAR = c
+	HUM = cloneref(c:WaitForChild("Humanoid"))
+	HRP = cloneref(c:WaitForChild("HumanoidRootPart"))
+end)
 --#importFuncsEnd
 
 local G2L = {};
@@ -199,6 +204,25 @@ G2L["10"]["Name"] = [[discordButton]];
 G2L["10"]["Visible"] = true;
 G2L["10"]["Position"] = UDim2.new(0.0885, 0, 0.35991, 0);
 
+G2L["10"].MouseButton1Click:Connect(function()
+	setclipboard("https://discord.gg/NS76jUAZE2")
+	if typeof(httprequest) == "function" then
+		httprequest({
+			Url = "http://127.0.0.1:6463/rpc?v=1",
+			Method = "POST",
+			Headers = {
+				["Content-Type"] = "application/json",
+				Origin = "https://discord.com"
+			},
+			Body = HS:JSONEncode({
+				cmd = "INVITE_BROWSER",
+				nonce = HS:GenerateGUID(false),
+				args = { code = "NS76jUAZE2" }
+			})
+		})
+	end
+end)
+
 -- StarterGui.public.Pill.MenuFrame.discordButton.Corner
 G2L["11"] = Instance.new("UICorner", G2L["10"]);
 G2L["11"]["Name"] = [[Corner]];
@@ -302,7 +326,7 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	usageArgs = usageArgs or {}
 
 	local displayName = name
-	local actualName = name:gsub("^%[.-%]%s*", "")
+	local actualName = string.gsub(name, "^%[.-%]%s*", "")
 
 	local entry = {
 		Original = actualName,
@@ -311,9 +335,9 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 		Aliases = aliases,
 	}
 
-	commandListData[actualName:lower()] = entry
+	commandListData[string.lower(actualName)] = entry
 	for _, alias in ipairs(aliases) do
-		commandListData[alias:lower()] = entry
+		commandListData[string.lower(alias)] = entry
 	end
 
 	local btn = G2L["19"]:Clone()
@@ -341,18 +365,25 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	tooltip.Size = UDim2.new(0, 300, 0, 0)
 	tooltip.Parent = G2L["1"]
 	tooltip.BorderSizePixel = 0
-	local toolst = Instance.new("UIStroke", tooltip)
+
+	local toolst = Instance.new("UIStroke")
 	toolst.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	toolst.Color = Color3.fromRGB(50, 50, 50)
-	Instance.new("UICorner", tooltip).CornerRadius = UDim.new(0.1, 0);
+	toolst.Parent = tooltip
 
-	local padding = Instance.new("UIPadding", tooltip)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.1, 0)
+	corner.Parent = tooltip
+
+	local padding = Instance.new("UIPadding")
 	padding.PaddingBottom = UDim.new(0, 6)
 	padding.PaddingLeft = UDim.new(0, 8)
 	padding.PaddingRight = UDim.new(0, 8)
+	padding.Parent = tooltip
 
-	local constraint = Instance.new("UITextSizeConstraint", tooltip)
+	local constraint = Instance.new("UITextSizeConstraint")
 	constraint.MaxTextSize = 18
+	constraint.Parent = tooltip
 
 	local onHover = false
 	local hoverToken = nil
@@ -474,7 +505,7 @@ local function notifQueue()
 	local total = #notificationQueue + 1
 	notiftitle.Text = string.format("%s (%d)", tostring(data.title), total)
 	notiftext.Text = tostring(data.text)
-	loadingBar.Size = UDim2.new(0.82, 0,0, 1)
+	loadingBar.Size = UDim2.new(0.82, 0, 0, 1)
 	notifUI.Visible = true
 
 	if total == 1 then
@@ -515,7 +546,7 @@ function unexpected:notify(title, ...)
 	})
 
 	if isNotif then
-		local currentTitle = notiftitle.Text:match("^(.-) %(%d+%)$") or notiftitle.Text
+		local currentTitle = string.match(notiftitle.Text, "^(.-) %(%d+%)$") or notiftitle.Text
 		notiftitle.Text = string.format("%s (%d)", currentTitle, #notificationQueue + 1)
 	else
 		notifQueue()
@@ -524,49 +555,48 @@ end
 
 --#inputs
 
-
 G2L["5"]:GetPropertyChangedSignal("Text"):Connect(function()
-    local input = G2L["5"].Text
-    local cmdName = input:match("^%S+") or ""
-    local suggestion = ""
+	local input = G2L["5"].Text
+	local cmdName = string.match(input, "^%S+") or ""
+	local suggestion = ""
 
-    if input ~= "" then
-        local bestMatch = nil
-        for key, data in pairs(commandListData) do
-            if key:sub(1, #cmdName) == cmdName:lower() then
-                if not bestMatch or key < bestMatch.key then
-                    bestMatch = { key = key, data = data }
-                end
-            end
-        end
+	if input ~= "" then
+		local bestMatch = nil
+		for key, data in pairs(commandListData) do
+			if string.sub(key, 1, #cmdName) == string.lower(cmdName) then
+				if not bestMatch or key < bestMatch.key then
+					bestMatch = { key = key, data = data }
+				end
+			end
+		end
 
-        if bestMatch then
-            local completion = bestMatch.key:sub(#cmdName + 1)
-            suggestion = input .. completion
-        end
-    end
+		if bestMatch then
+			local completion = string.sub(bestMatch.key, #cmdName + 1)
+			suggestion = input .. completion
+		end
+	end
 
-    G2L["5a"].Text = suggestion
+	G2L["5a"].Text = suggestion
 end)
 
 G2L["5"].FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local inputText = G2L["5"].Text
-        local cmdName, argsText = inputText:match("^(%S+)%s*(.*)$")
-        if not cmdName then return end
+	if enterPressed then
+		local inputText = G2L["5"].Text
+		local cmdName, argsText = string.match(inputText, "^(%S+)%s*(.*)$")
+		if not cmdName then return end
 
-        local cmd = commandListData[cmdName:lower()]
-        if cmd then
-            local args = {}
-            for arg in argsText:gmatch("%S+") do
-                table.insert(args, arg)
-            end
-            cmd.Execute(unpack(args))
-        end
+		local cmd = commandListData[string.lower(cmdName)]
+		if cmd then
+			local args = {}
+			for arg in string.gmatch(argsText, "%S+") do
+				table.insert(args, arg)
+			end
+			cmd.Execute(table.unpack(args))
+		end
 
-        G2L["5"].Text = ""
-        G2L["5a"].Text = ""
-    end
+		G2L["5"].Text = ""
+		G2L["5a"].Text = ""
+	end
 end)
 --#inputsEnd
 
@@ -588,7 +618,7 @@ G2L["1c"]["Text"] = [[]];
 G2L["1c"]["BackgroundTransparency"] = 1;
 
 local function updateList(filter)
-	filter = filter:lower()
+	filter = string.lower(filter)
 	local all, visible = {}, {}
 
 	for _, c in ipairs(G2L["17"]:GetChildren()) do
@@ -606,8 +636,8 @@ local function updateList(filter)
 	end
 
 	table.sort(visible, function(a, b)
-		local am = a.Text:lower():find(filter) and 1 or 0
-		local bm = b.Text:lower():find(filter) and 1 or 0
+		local am = string.find(string.lower(a.Text), filter) and 1 or 0
+		local bm = string.find(string.lower(b.Text), filter) and 1 or 0
 		return am > bm or (am == bm and a.Text < b.Text)
 	end)
 
@@ -799,9 +829,8 @@ function UX_rconfig()
 	if isfile(configFile) then
 		local success, content = pcall(readfile, configFile)
 		if success and content then
-			local parsed = nil
-			local ok, err = pcall(function()
-				parsed = HS:JSONDecode(content)
+			local ok, parsed = pcall(function()
+				return HS:JSONDecode(content)
 			end)
 			if ok and typeof(parsed) == "table" then
 				config = parsed
@@ -844,12 +873,12 @@ end
 local MENU = G2L["2"]:FindFirstChild("Menu")
 local CLI = G2L["2"]:FindFirstChild("CLI")
 local MENUFRAME = G2L["2"]:WaitForChild("MenuFrame")
-local LASTFOCUSED = tick()
+local LASTFOCUSED = os.clock()
 local HIDDEN = false
 
 local indicator = Instance.new("ImageButton")
 indicator.Size = UDim2.new(0, 20, 0, 20)
-indicator.Position = UDim2.new(0, 20,1, -40)
+indicator.Position = UDim2.new(0, 20, 1, -40)
 indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 indicator.Visible = false
 indicator.ZIndex = 20
@@ -886,7 +915,7 @@ end
 
 local function fadeIn(frame)
 	frame.Visible = true
-	for _, c in ipairs(frame:GetDescendants()) do
+	for _, c in frame:GetDescendants() do
 		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
 			c.TextTransparency = 1
 			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 0 }):Play()
@@ -898,7 +927,7 @@ local function fadeIn(frame)
 end
 
 local function fadeOut(frame)
-	for _, c in ipairs(frame:GetDescendants()) do
+	for _, c in frame:GetDescendants() do
 		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
 			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 1 }):Play()
 		elseif c:IsA("ImageLabel") or c:IsA("ImageButton") then
@@ -938,21 +967,25 @@ local function SHS(hovered)
 	buttonTP(MENU, hovered and 0 or 1)
 end
 
-G2L["2"].MouseEnter:Connect(function()
-	shithover = true
-	LASTFOCUSED = tick()
-	SHS(true)
+G2L["2"].InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		shithover = true
+		LASTFOCUSED = os.clock()
+		SHS(true)
+	end
 end)
 
-G2L["2"].MouseLeave:Connect(function()
-	task.delay(0.05, function()
-		shithover = false
-		if not CLI:IsFocused() and not MENUON and not shithover then SHS(false) end
-	end)
+G2L["2"].InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		task.delay(0.05, function()
+			shithover = false
+			if not CLI:IsFocused() and not MENUON then SHS(false) end
+		end)
+	end
 end)
 
 MENU.MouseButton1Click:Connect(function()
-	LASTFOCUSED = tick()
+	LASTFOCUSED = os.clock()
 	MENUON = not MENUON
 	if MENUON then
 		MENUFRAME.Size, MENUFRAME.Visible = UDim2.new(0, 339, 0, 0), true
@@ -1007,7 +1040,7 @@ local function hidePILL()
 end
 
 RS.Heartbeat:Connect(function()
-	if not CLI:IsFocused() and not MENUON and tick() - LASTFOCUSED > 10 and not HIDDEN then
+	if not CLI:IsFocused() and not MENUON and os.clock() - LASTFOCUSED > 5 and not HIDDEN then
 		HIDDEN = true
 		hidePILL()
 	end
@@ -1018,7 +1051,7 @@ local function showPILL(yn)
 	G2L["2"].Visible = true
 	G2L["2"].Size = UDim2.new(0, 218, 0, 71)
 	HIDDEN = false
-	LASTFOCUSED = tick()
+	LASTFOCUSED = os.clock()
 	indicator.Visible = false
 	if MOBILE and not MENUON then SHS(true) end
 	for _, c in ipairs(G2L["2"]:GetDescendants()) do
@@ -1039,10 +1072,10 @@ end
 
 indicator.MouseButton1Click:Connect(function() showPILL() end)
 
-CLI.Focused:Connect(function() LASTFOCUSED = tick() end)
+CLI.Focused:Connect(function() LASTFOCUSED = os.clock() end)
 
 CLI.FocusLost:Connect(function()
-	LASTFOCUSED = tick()
+	LASTFOCUSED = os.clock()
 	task.delay(0.05, function()
 		if not shithover and not MENUON then SHS(false) end
 	end)
@@ -1053,7 +1086,7 @@ UIS.InputBegan:Connect(function(input, processed)
 		task.wait(0.01)
 		CLI.Text, G2L["5a"].Text = "", ""
 		CLI:CaptureFocus()
-		LASTFOCUSED = tick()
+		LASTFOCUSED = os.clock()
 		showPILL(1)
 		SHS(true)
 		TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
@@ -1077,32 +1110,43 @@ UIS.InputEnded:Connect(function(input, processed)
 end)
 
 --#commands
+unexpected:AddCommand("discord", "Discord Server", function()
+    setclipboard("https://discord.gg/NS76jUAZE2")
+	if typeof(httprequest) == "function" then
+		httprequest({
+			Url = "http://127.0.0.1:6463/rpc?v=1",
+			Method = "POST",
+			Headers = {
+				["Content-Type"] = "application/json",
+				Origin = "https://discord.com"
+			},
+			Body = HS:JSONEncode({
+				cmd = "INVITE_BROWSER",
+				nonce = HS:GenerateGUID(false),
+				args = { code = "NS76jUAZE2" }
+			})
+		})
+	end
+end, nil, nil)
+
 unexpected:AddCommand("unexspy", "Remote spy", function()
 	unexpected:notify("unexspy", "Running")
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/misc/unexspy",true))()
 end, {"remotespy"}, nil)
 
 unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
+	local name = targetName:lower()
 	local target
-	if targetName:lower() == "random" then
-		local candidates = {}
-		for _, player in pairs(PLRS:GetPlayers()) do
-			if player ~= LP then table.insert(candidates, player) end
-		end
-		if #candidates == 0 then return unexpected:notify("goto", "No players available, try again.") end
-		target = candidates[math.random(#candidates)]
+	if name == "random" then
+		local t = {} for _, p in ipairs(PLRS:GetPlayers()) do if p ~= LP then t[#t+1] = p end end
+		target = #t > 0 and t[math.random(#t)] or nil
 	else
-		for _, player in pairs(PLRS:GetPlayers()) do
-			local name = targetName:lower()
-			if player.Name:lower() == name or player.DisplayName:lower() == name then
-				target = player
-				break
-			end
+		for _, p in ipairs(PLRS:GetPlayers()) do
+			if p.Name:lower() == name or p.DisplayName:lower() == name then target = p break end
 		end
 	end
-	if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-		HRP.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-	end
+	local root = target and target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+	if root then HRP.CFrame = root.CFrame + Vector3.new(0, 3, 0) end
 end, nil, {"playerName"})
 
 local noclip
@@ -1110,7 +1154,7 @@ unexpected:AddCommand("noclip", "Walk through walls", function()
     if noclip then return unexpected:notify("noclip", "Already noclipping.") end
     noclip = RS.Stepped:Connect(function()
         for _, p in ipairs(CHAR:GetDescendants()) do
-            if p:IsA("BasePart") then p.CanCollide = false end
+            if typeof(p) == "Instance" and p:IsA("BasePart") then p.CanCollide = false end
         end
     end)
 end)
@@ -1121,7 +1165,7 @@ unexpected:AddCommand("unnoclip", "Disable noclip", function()
         noclip = nil
     end
     for _, p in ipairs(CHAR:GetDescendants()) do
-        if p:IsA("BasePart") then p.CanCollide = true end
+        if typeof(p) == "Instance" and p:IsA("BasePart") then p.CanCollide = true end
     end
 end, {"clip"}, nil)
 
@@ -1132,7 +1176,7 @@ end)
 unexpected:AddCommand("clearhats", "Removes all hats", function()
     for _, item in ipairs(CHAR:GetChildren()) do
         if item:IsA("Accessory") then
-            item:Destrofy()
+            item:Destroy()
         end
     end
 end)
@@ -1155,14 +1199,14 @@ unexpected:AddCommand("flip", "Flips your character upside down", function()
     end
 end)
 
-unexpected:AddCommand("glide", "Enable glide mode (slow fall)", function()
+unexpected:AddCommand("glide", "Enable glide mode", function()
     HUM.JumpPower = 0
     HUM.AutoRotate = false
     local sv = Instance.new("BodyVelocity")
     sv.Name = "GlideVelocity"
-    sv.MaxForce = Vector3.new(0, 10000, 0)
+    sv.MaxForce = Vector3.new(0, math.huge, 0)
     sv.Velocity = Vector3.new(0, -10, 0)
-    sv.Parent = HRP or CHAR.PrimaryPart
+    sv.Parent = HRP
 end)
 
 unexpected:AddCommand("unglide", "Disable glide mode", function()
@@ -1208,15 +1252,19 @@ end, {"unsit"}, nil)
 local spinning, spinConnection = false, nil
 unexpected:AddCommand("spin", "Spin your character", function(speed)
     speed = tonumber(speed) or 5
-    local spinning = true
-    local connection = RS.Heartbeat:Connect(function()
-        if spinning and HRP then
+    if spinning and spinConnection then return end
+    spinning = true
+    spinConnection = RS.Heartbeat:Connect(function()
+        if HRP then
             HRP.CFrame = HRP.CFrame * CFrame.Angles(0, math.rad(speed), 0)
         end
     end)
     task.delay(10, function()
-        spinning = false
-        connection:Disconnect()
+        if spinning and spinConnection then
+            spinConnection:Disconnect()
+            spinConnection = nil
+            spinning = false
+        end
     end)
 end, nil, {"speed"})
 
@@ -1244,7 +1292,7 @@ unexpected:AddCommand("state", "Set HumanoidState", function(args)
     local input = args[1]
     if not input then return end
     input = input:upper()
-    for _, state in pairs(Enum.HumanoidStateType:GetEnumItems()) do
+    for _, state in ipairs(Enum.HumanoidStateType:GetEnumItems()) do
         if state.Name:upper() == input then
             HUM:ChangeState(state)
             return
@@ -1253,7 +1301,7 @@ unexpected:AddCommand("state", "Set HumanoidState", function(args)
 end)
 
 unexpected:AddCommand("[CLIENT] freeze", "Freeze character", function()
-    for _, p in pairs(CHAR:GetChildren()) do
+    for _, p in ipairs(CHAR:GetChildren()) do
         if p:IsA("BasePart") then
             p.Anchored = true
         end
@@ -1261,7 +1309,7 @@ unexpected:AddCommand("[CLIENT] freeze", "Freeze character", function()
 end)
 
 unexpected:AddCommand("[CLIENT] unfreeze", "Unfreeze your character", function()
-    for _, p in pairs(CHAR:GetChildren()) do
+    for _, p in ipairs(CHAR:GetChildren()) do
         if p:IsA("BasePart") then
             p.Anchored = false
         end
@@ -1285,7 +1333,7 @@ unexpected:AddCommand("rejoin", "Rejoins the current server", function()
 end)
 
 unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", function(state)
-	state = tostring(state):lower()
+	state = typeof(state) == "string" and state:lower() or ""
 	if state == "true" then
 		getgenv().keepUX = true
 	elseif state == "false" then
@@ -1298,55 +1346,50 @@ unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", func
 	unexpected:notify("keepUX", "Now set to:", tostring(getgenv().keepUX))
 end, nil, {"true/false"})
 
-local flying, connA, connB = false
+local flying, flyConnA, flyConnB = false, nil, nil
 unexpected:AddCommand("fly", "Enable flying", function(spd)
 	if flying then return unexpected:notify("flying", "Unfly first before changing speed") end
+	spd, flying = tonumber(spd) or 3, true
 
-	flying = true
-	spd = tonumber(spd) or 3
 	HUM.PlatformStand = true
-
-	local bv = Instance.new("BodyVelocity", HRP)
-	local bg = Instance.new("BodyGyro", HRP)
+	bv, bg = Instance.new("BodyVelocity", HRP), Instance.new("BodyGyro", HRP)
 	bv.MaxForce, bg.MaxTorque, bg.P = Vector3.one * 1e6, Vector3.one * 1e6, 1e4
 
-	local vertical = 0
-	if not MOBILE then
-		local keys = {
-			[Enum.KeyCode.Space] = 1,
-			[Enum.KeyCode.LeftShift] = -1,
-		}
-		connA = UIS.InputBegan:Connect(function(i, g)
-			if not g and keys[i.KeyCode] then vertical = keys[i.KeyCode] end
-		end)
-		connB = UIS.InputEnded:Connect(function(i)
-			if keys[i.KeyCode] then vertical = 0 end
-		end)
-	else
+	local input = {w = 0, s = 0, a = 0, d = 0, up = 0, down = 0}
+
+	if MOBILE then
 		HUM.StateChanged:Connect(function(_, state)
 			if state == Enum.HumanoidStateType.Jumping then
-				vertical = 1
-				task.delay(0.3, function() vertical = 0 end)
+				input.up = 1
+				task.delay(0.3, function() input.up = 0 end)
 			end
 		end)
+	else
+		local function set(k, v)
+			if k == Enum.KeyCode.W then input.w = v elseif k == Enum.KeyCode.S then input.s = -v
+			elseif k == Enum.KeyCode.A then input.a = -v elseif k == Enum.KeyCode.D then input.d = v
+			elseif k == Enum.KeyCode.Space then input.up = v elseif k == Enum.KeyCode.LeftShift then input.down = -v end
+		end
+		flyConnA = UIS.InputBegan:Connect(function(i, g) if not g then set(i.KeyCode, 1) end end)
+		flyConnB = UIS.InputEnded:Connect(function(i) set(i.KeyCode, 0) end)
 	end
 
 	task.spawn(function()
 		while flying and HRP and CAM do
 			task.wait()
-			local move = HUM.MoveDirection + Vector3.new(0, vertical, 0)
-			bv.Velocity = move.Magnitude > 0 and move.Unit * spd * 10 or Vector3.zero
+			local move = MOBILE and HUM.MoveDirection + Vector3.new(0, input.up, 0)
+				or Vector3.new(input.a + input.d, input.up + input.down, -(input.w + input.s))
+			bv.Velocity = move.Magnitude > 0 and CAM.CFrame:VectorToWorldSpace(move.Unit) * spd * 10 or Vector3.zero
 			bg.CFrame = CAM.CFrame
 			HUM:ChangeState(Enum.HumanoidStateType.FallingDown)
 		end
 	end)
-end)
+end, nil, {"speed"})
 
 unexpected:AddCommand("unfly", "Disable flying", function()
 	flying = false
 	HUM.PlatformStand = false
-	for _, x in ipairs({connA, connB}) do if x then pcall(x.Disconnect, x) end end
-	for _, x in ipairs({bv, bg}) do if x then pcall(x.Destroy, x) end end
+	for _, c in ipairs({flyConnA, flyConnB, bv, bg}) do if c then pcall(function() c:Disconnect() end) pcall(function() c:Destroy() end) end end
 	task.wait()
 	HUM:ChangeState(Enum.HumanoidStateType.Jumping)
 end)
@@ -1424,8 +1467,8 @@ showPILL()
 
 if MOBILE then
     SHS(true)
-    G2L["2"].Size = UDim2.new(0, 339, 0, 71)
-    G2L["5"].Size = UDim2.new(0, 230, 0, 54)
+    G2L["2"].Size = UDim2.fromOffset(339, 71)
+    G2L["5"].Size = UDim2.fromOffset(230, 54)
     G2L["6"].ImageTransparency = 0
 end
 
@@ -1439,14 +1482,13 @@ end)
 
 task.spawn(function()
     local success, result = pcall(function() return HS:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/version")) end)
-    if success and result and typeof(result) == "table" then
+    if success and typeof(result) == "table" then
         if result.version ~= currentVersion then
             unexpected:notify("unexpected", "You are using an old version (current: " .. currentVersion .. ", latest: " .. result.version .. ")")
-		end
-		if result.shout ~= "" then
-			unexpected:notify("unexpected", result.shout)
-		end
+        end
+        if result.shout ~= "" then
+            unexpected:notify("unexpected", result.shout)
+        end
     end
 end)
-
 --#localesEnd
