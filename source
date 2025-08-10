@@ -206,7 +206,7 @@ G2L["10"]["Visible"] = true;
 G2L["10"]["Position"] = UDim2.new(0.0885, 0, 0.35991, 0);
 
 G2L["10"].MouseButton1Click:Connect(function()
-	setclipboard("https://discord.gg/NS76jUAZE2")
+	setclipboard("https://discord.gg/J73SnGB2y2")
 	if typeof(httprequest) == "function" then
 		httprequest({
 			Url = "http://127.0.0.1:6463/rpc?v=1",
@@ -218,7 +218,7 @@ G2L["10"].MouseButton1Click:Connect(function()
 			Body = HS:JSONEncode({
 				cmd = "INVITE_BROWSER",
 				nonce = HS:GenerateGUID(false),
-				args = { code = "NS76jUAZE2" }
+				args = { code = "J73SnGB2y2" }
 			})
 		})
 	end
@@ -1095,7 +1095,7 @@ end)
 
 --#commands
 unexpected:AddCommand("discord", "Discord Server", function()
-    setclipboard("https://discord.gg/NS76jUAZE2")
+    setclipboard("https://discord.gg/J73SnGB2y2")
 	if typeof(httprequest) == "function" then
 		httprequest({
 			Url = "http://127.0.0.1:6463/rpc?v=1",
@@ -1107,7 +1107,7 @@ unexpected:AddCommand("discord", "Discord Server", function()
 			Body = HS:JSONEncode({
 				cmd = "INVITE_BROWSER",
 				nonce = HS:GenerateGUID(false),
-				args = { code = "NS76jUAZE2" }
+				args = { code = "J73SnGB2y2" }
 			})
 		})
 	end
