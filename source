@@ -1,41 +1,48 @@
-if unexpected_LOAD then return end
-pcall(function() getgenv().unexpected_LOAD = true end)
+if getgenv().unexpected_LOAD then return end
+getgenv().unexpected_LOAD = true
 
-function missing(t, f, fallback)
-    if type(f) == t then return f end
-    return fallback
+local function missing(t, f, fallback)
+    return type(f) == t and f or fallback
 end
 
 --#core
-cloneref = missing("function", cloneref, function(...) return ... end)
-queueteleport = missing("function", queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport))
+local cloneref = missing("function", cloneref, function(...) return ... end)
+local queueteleport = missing("function", queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport))
 --#coreEnd
 
 --#imports
-COREGUI = cloneref(game:GetService("CoreGui"))
-PLRS = cloneref(game:GetService("Players"))
-UIS = cloneref(game:GetService("UserInputService"))
-RS = cloneref(game:GetService("RunService"))
-GS = cloneref(game:GetService("GuiService"))
-LP = cloneref(PLRS.LocalPlayer)
-TS = cloneref(game:GetService("TweenService"))
-HS = cloneref(game:GetService("HttpService"))
-TPS = cloneref(game:GetService("TeleportService"))
-WS = cloneref(game:GetService("Workspace"))
-VU = cloneref(game:GetService("VirtualUser"))
-CAM = cloneref(WS.CurrentCamera)
-MOBILE = UIS.TouchEnabled
+local SERVICE = setmetatable({}, {
+    __index = function(self, k)
+        local s = cloneref(game:GetService(k))
+        rawset(self, k, s)
+        return s
+    end
+})
+
+local COREGUI = SERVICE.CoreGui
+local PLRS = SERVICE.Players
+local UIS = SERVICE.UserInputService
+local RS = SERVICE.RunService
+local GS = SERVICE.GuiService
+local LP = cloneref(PLRS.LocalPlayer)
+local TS = SERVICE.TweenService
+local HS = SERVICE.HttpService
+local TPS = SERVICE.TeleportService
+local WS = SERVICE.Workspace
+local VU = SERVICE.VirtualUser
+local CAM = cloneref(WS.CurrentCamera)
+local MOBILE = UIS.TouchEnabled
 --#importsEnd
 
 --#importFuncs
-CHAR = LP.Character or LP.CharacterAdded:Wait()
-HUM = cloneref(CHAR:WaitForChild("Humanoid"))
-HRP = cloneref(CHAR:WaitForChild("HumanoidRootPart"))
+local CHAR = LP.Character or LP.CharacterAdded:Wait()
+local HUM = cloneref(CHAR:WaitForChild("Humanoid"))
+local HRP = cloneref(CHAR:WaitForChild("HumanoidRootPart"))
 
 LP.CharacterAdded:Connect(function(c)
-	CHAR = c
-	HUM = cloneref(c:WaitForChild("Humanoid"))
-	HRP = cloneref(c:WaitForChild("HumanoidRootPart"))
+    CHAR = c
+    HUM = cloneref(c:WaitForChild("Humanoid"))
+    HRP = cloneref(c:WaitForChild("HumanoidRootPart"))
 end)
 --#importFuncsEnd
 
@@ -91,15 +98,15 @@ end
 local unexpected_UI = {};
 local currentVersion = "g2"
 local function randomString(length, charset)
-	length = length or math.random(10, 20)
-	charset = charset or "abcdefghijklmnopqRStuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	local chars = {}
-	local charsetLength = #charset
-	for i = 1, length do
-		local rand = math.random(1, charsetLength)
-		chars[i] = charset:sub(rand, rand)
-	end
-	return table.concat(chars)
+    length = length or math.random(10, 20)
+    charset = charset or "abcdefghijklmnopqRStuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local chars = {}
+    local rand, sub = math.random, string.sub
+    local charsetLength = #charset
+    for i = 1, length do
+        chars[i] = sub(charset, rand(1, charsetLength), rand(1, charsetLength))
+    end
+    return table.concat(chars)
 end
 
 unexpected_UI["UI"] = Instance.new("ScreenGui", gethui() or COREGUI);
@@ -307,7 +314,8 @@ CREATE_ASPECT(unexpected_UI["CMDBACK"])
 
 local unexpected = {}
 local commandListData = {}
-local index = 0
+local commandButtonCACHE = {}
+
 function unexpected:addcmd(name, desc, func, aliases, usageArgs)
 	aliases = aliases or {}
 	usageArgs = usageArgs or {}
@@ -320,93 +328,104 @@ function unexpected:addcmd(name, desc, func, aliases, usageArgs)
 		Description = desc,
 		Execute = func,
 		Aliases = aliases,
+		UsageArgs = usageArgs,
+		DisplayName = displayName,
 	}
-
 	commandListData[string.lower(actualName)] = entry
 	for _, alias in ipairs(aliases) do
 		commandListData[string.lower(alias)] = entry
 	end
+end
 
-	local btn = unexpected_UI["CMDEXAMPLE"]:Clone()
-	local allNames = {displayName}
-	for _, alias in ipairs(aliases) do table.insert(allNames, alias) end
-	btn.Text = table.concat(allNames, " / ")
-	btn.Visible = true
-	btn.Position = UDim2.new(0, 0, 0, index * 32)
-	btn.Parent = unexpected_UI["BTNLIST"]
+local function showCommands()
+	local index = 0
+	local used = {}
+	for key, entry in pairs(commandListData) do
+		if not used[entry] then
+			used[entry] = true
+			local btn = unexpected_UI["CMDEXAMPLE"]:Clone()
+			local allNames = {entry.DisplayName}
+			for _, alias in ipairs(entry.Aliases) do table.insert(allNames, alias) end
+			btn.Text = table.concat(allNames, " / ")
+			btn.Visible = true
+			btn.Position = UDim2.new(0, 0, 0, index * 32)
+			btn.Parent = unexpected_UI["BTNLIST"]
 
-	local usage = "usage: " .. actualName
-	if #usageArgs > 0 then usage = usage .. " [" .. table.concat(usageArgs, "] [") .. "]" end
+			local usage = "usage: " .. entry.Original
+			if #entry.UsageArgs > 0 then usage = usage .. " [" .. table.concat(entry.UsageArgs, "] [") .. "]" end
 
-	local tooltip = Instance.new("TextLabel")
-	tooltip.BackgroundColor3 = FQ.COLORS.BACKGROUND
-	tooltip.Visible = false
-	tooltip.Font = Enum.Font.Gotham
-	tooltip.TextColor3 = FQ.COLORS.TEXT_MAIN
-	tooltip.TextSize = 18
-	tooltip.TextWrapped = true
-	tooltip.TextXAlignment = Enum.TextXAlignment.Left
-	tooltip.TextYAlignment = Enum.TextYAlignment.Top
-	tooltip.ZIndex = 9999
-	tooltip.AutomaticSize = Enum.AutomaticSize.XY
-	tooltip.Size = UDim2.new(0, 300, 0, 0)
-	tooltip.Parent = unexpected_UI["UI"]
-	tooltip.BorderSizePixel = 0
-
-	local toolst = Instance.new("UIStroke")
-	toolst.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	toolst.Color = FQ.COLORS.STROKE
-	toolst.Parent = tooltip
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0.1, 0)
-	corner.Parent = tooltip
-
-	local padding = Instance.new("UIPadding")
-	padding.PaddingBottom = UDim.new(0, 6)
-	padding.PaddingLeft = UDim.new(0, 8)
-	padding.PaddingRight = UDim.new(0, 8)
-	padding.Parent = tooltip
-
-	local constraint = Instance.new("UITextSizeConstraint")
-	constraint.MaxTextSize = 18
-	constraint.Parent = tooltip
-
-	local onHover = false
-	local hoverToken = nil
-
-	btn.MouseEnter:Connect(function()
-		onHover = true
-		local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
-		tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
-		tooltip.Text = desc .. "\n" .. usage
-		tooltip.Visible = true
-		hoverToken = tick()
-	end)
-
-	btn.MouseLeave:Connect(function()
-		local thisToken = tick()
-		hoverToken = thisToken
-		onHover = false
-		if hoverToken == thisToken then
+			local tooltip = Instance.new("TextLabel")
+			tooltip.BackgroundColor3 = FQ.COLORS.BACKGROUND
 			tooltip.Visible = false
+			tooltip.Font = Enum.Font.Gotham
+			tooltip.TextColor3 = FQ.COLORS.TEXT_MAIN
+			tooltip.TextSize = 18
+			tooltip.TextWrapped = true
+			tooltip.TextXAlignment = Enum.TextXAlignment.Left
+			tooltip.TextYAlignment = Enum.TextYAlignment.Top
+			tooltip.ZIndex = 9999
+			tooltip.AutomaticSize = Enum.AutomaticSize.XY
+			tooltip.Size = UDim2.new(0, 300, 0, 0)
+			tooltip.Parent = unexpected_UI["UI"]
+			tooltip.BorderSizePixel = 0
+
+			local toolst = Instance.new("UIStroke")
+			toolst.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			toolst.Color = FQ.COLORS.STROKE
+			toolst.Parent = tooltip
+
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0.1, 0)
+			corner.Parent = tooltip
+
+			local padding = Instance.new("UIPadding")
+			padding.PaddingBottom = UDim.new(0, 6)
+			padding.PaddingLeft = UDim.new(0, 8)
+			padding.PaddingRight = UDim.new(0, 8)
+			padding.Parent = tooltip
+
+			local constraint = Instance.new("UITextSizeConstraint")
+			constraint.MaxTextSize = 18
+			constraint.Parent = tooltip
+
+			local onHover = false
+			local hoverToken = nil
+
+			btn.MouseEnter:Connect(function()
+				onHover = true
+				local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
+				tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
+				tooltip.Text = entry.Description .. "\n" .. usage
+				tooltip.Visible = true
+				hoverToken = tick()
+			end)
+
+			btn.MouseLeave:Connect(function()
+				local thisToken = tick()
+				hoverToken = thisToken
+				onHover = false
+				if hoverToken == thisToken then
+					tooltip.Visible = false
+				end
+			end)
+
+			RS.RenderStepped:Connect(function()
+                if onHover and tooltip.Visible then
+                    local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
+                    tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
+                end
+	        end)
+
+			btn.MouseButton1Click:Connect(function()
+				unexpected_UI["CLI"].Text = entry.Original
+				task.wait(0.01)
+				unexpected_UI["CLI"]:CaptureFocus()
+			end)
+
+			table.insert(commandButtonCACHE, btn)
+			index += 1
 		end
-	end)
-
-	RS.RenderStepped:Connect(function()
-		if onHover and tooltip.Visible then
-			local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
-			tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
-		end
-	end)
-
-	btn.MouseButton1Click:Connect(function()
-		unexpected_UI["CLI"].Text = actualName
-		task.wait(0.01)
-		unexpected_UI["CLI"]:CaptureFocus()
-	end)
-
-	index += 1
+	end
 	unexpected_UI["BTNLIST"].CanvasSize = UDim2.new(0, 0, 0, index * 32)
 end
 
@@ -753,7 +772,7 @@ unexpected_UI["BACK"]["Size"] = UDim2.new(0, 38, 0, 30);
 unexpected_UI["BACK"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
 unexpected_UI["BACK"]["Name"] = [[infoBack]];
 unexpected_UI["BACK"]["Position"] = UDim2.new(0.0885, 0, 0.82759, 0);
-CREATE_ASPECT(unexpected_UI["29"]);
+CREATE_ASPECT(unexpected_UI["BACK"]);
 
 unexpected_UI["LABEL2"] = Instance.new("TextLabel", unexpected_UI["MENUFRAME"]);
 unexpected_UI["LABEL2"]["TextWrapped"] = true;
@@ -954,6 +973,7 @@ end)
 
 MENUS[1].MouseButton1Click:Connect(function()
 	for _, b in ipairs(MENUS) do b.Visible = false end
+	showCommands()
 	fadeIn(MENUFRAMES.command)
 end)
 
@@ -963,8 +983,13 @@ MENUS[2].MouseButton1Click:Connect(function()
 end)
 
 MENUFRAMES.command:WaitForChild("commandBack").MouseButton1Click:Connect(function()
-	fadeOut(MENUFRAMES.command)
-	task.delay(0.1, function() for _, b in ipairs(MENUS) do b.Visible = true end end)
+    fadeOut(MENUFRAMES.command)
+    for _, child in ipairs(unexpected_UI["UI"]:GetChildren()) do
+        if child:IsA("TextLabel") and child.Visible and child.Text ~= "" and child.Size.X.Offset == 300 then
+            child.Visible = false
+        end
+    end
+    task.delay(0.1, function() for _, b in ipairs(MENUS) do b.Visible = true end end)
 end)
 
 MENUFRAMES.info:WaitForChild("infoBack").MouseButton1Click:Connect(function()
