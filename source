@@ -39,7 +39,56 @@ LP.CharacterAdded:Connect(function(c)
 end)
 --#importFuncsEnd
 
-local G2L = {};
+local FQ = {
+    FONTS = {
+        REGULAR = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+        BOLD    = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
+        ITALIC  = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Italic),
+    },
+    COLORS = {
+        BACKGROUND = Color3.fromRGB(0, 0, 0),
+        STROKE     = Color3.fromRGB(50, 50, 50),
+        TEXT_MAIN  = Color3.fromRGB(220, 220, 220),
+        TEXT_DIM   = Color3.fromRGB(120, 120, 120),
+        ACCENT     = Color3.fromRGB(100, 100, 100),
+    },
+    SIZES = {
+        CLI_WIDTH      = 167,
+        CLI_WIDTH_FULL = 230,
+        CLI_HEIGHT     = 54,
+        PILL_HEIGHT    = 71,
+    },
+    PADDING = {
+        SMALL  = UDim.new(0, 4),
+        MEDIUM = UDim.new(0, 8),
+    }
+}
+
+local function CREATE_CORNER(PARENT, RADIUS_SCALE, RADIUS_OFFSET)
+    local CORNER = Instance.new("UICorner")
+    CORNER.CornerRadius = UDim.new(RADIUS_SCALE or 0, RADIUS_OFFSET or 0)
+    CORNER.Parent = PARENT
+    return CORNER
+end
+
+local function CREATE_STROKE(PARENT, COLOR, APPLY_MODE)
+    local STROKE = Instance.new("UIStroke")
+    STROKE.Color = COLOR or FQ.COLORS.STROKE
+    STROKE.ApplyStrokeMode = APPLY_MODE or Enum.ApplyStrokeMode.Border
+    STROKE.Parent = PARENT
+    return STROKE
+end
+
+local function CREATE_ASPECT(PARENT, RATIO)
+    local AR = Instance.new("UIAspectRatioConstraint")
+    if RATIO then
+        AR.AspectRatio = RATIO
+    end
+    AR.Parent = PARENT
+    return AR
+end
+
+local unexpected_UI = {};
 local currentVersion = "g2"
 local function randomString(length, charset)
 	length = length or math.random(10, 20)
@@ -53,159 +102,126 @@ local function randomString(length, charset)
 	return table.concat(chars)
 end
 
-G2L["1"] = Instance.new("ScreenGui", gethui() or COREGUI);
-G2L["1"]["Name"] = randomString();
+unexpected_UI["UI"] = Instance.new("ScreenGui", gethui() or COREGUI);
+unexpected_UI["UI"]["Name"] = randomString();
 
--- StarterGui.public.Pill
-G2L["2"] = Instance.new("Frame", G2L["1"]);
-G2L["2"]["ZIndex"] = 0;
-G2L["2"]["BorderSizePixel"] = 0;
-G2L["2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["2"]["Size"] = UDim2.new(0, 218, 0, 71);
-G2L["2"]["Position"] = UDim2.new(0.5, -109, 1, -150);
-G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["2"]["Name"] = [[Pill]];
+unexpected_UI["PILL"] = Instance.new("Frame", unexpected_UI["UI"]);
+unexpected_UI["PILL"]["ZIndex"] = 0;
+unexpected_UI["PILL"]["BorderSizePixel"] = 0;
+unexpected_UI["PILL"]["BackgroundColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["PILL"]["Size"] = UDim2.new(0, 218, 0, 71);
+unexpected_UI["PILL"]["Position"] = UDim2.new(0.5, -109, 1, -150);
+unexpected_UI["PILL"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["PILL"]["Name"] = [[Pill]];
+CREATE_CORNER(unexpected_UI["PILL"], 1, 0)
+CREATE_STROKE(unexpected_UI["PILL"], FQ.COLORS.STROKE)
 
--- StarterGui.public.Pill.Corner
-G2L["3"] = Instance.new("UICorner", G2L["2"]);
-G2L["3"]["Name"] = [[Corner]];
-G2L["3"]["CornerRadius"] = UDim.new(1, 0);
+unexpected_UI["CLI"] = Instance.new("TextBox", unexpected_UI["PILL"]);
+unexpected_UI["CLI"]["CursorPosition"] = -1;
+unexpected_UI["CLI"]["Name"] = [[CLI]];
+unexpected_UI["CLI"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["CLI"]["PlaceholderColor3"] = FQ.COLORS.TEXT_DIM;
+unexpected_UI["CLI"]["BorderSizePixel"] = 0;
+unexpected_UI["CLI"]["TextWrapped"] = true;
+unexpected_UI["CLI"]["TextSize"] = 20;
+unexpected_UI["CLI"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["CLI"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["CLI"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["CLI"]["PlaceholderText"] = [[unexpected ]]..currentVersion;
+unexpected_UI["CLI"]["Size"] = UDim2.new(0, 167, 0, 54);
+unexpected_UI["CLI"]["Position"] = UDim2.new(0, 25, 0.5, -27);
+unexpected_UI["CLI"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["CLI"]["Text"] = [[]];
+unexpected_UI["CLI"]["ClearTextOnFocus"] = false;
+unexpected_UI["CLI"]["ZIndex"] = 1
+unexpected_UI["CLI"]["BackgroundTransparency"] = 1;
 
--- StarterGui.public.Pill.Stroke
-G2L["4"] = Instance.new("UIStroke", G2L["2"]);
-G2L["4"]["Name"] = [[Stroke]];
-G2L["4"]["Color"] = Color3.fromRGB(50, 50, 50);
+unexpected_UI["PREDICTOR"] = Instance.new("TextLabel", unexpected_UI["PILL"]);
+unexpected_UI["PREDICTOR"]["Name"] = [[Predictor]];
+unexpected_UI["PREDICTOR"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["PREDICTOR"]["BorderSizePixel"] = 0;
+unexpected_UI["PREDICTOR"]["TextWrapped"] = true;
+unexpected_UI["PREDICTOR"]["TextSize"] = 20;
+unexpected_UI["PREDICTOR"]["TextColor3"] = FQ.COLORS.STROKE;
+unexpected_UI["PREDICTOR"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["PREDICTOR"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["PREDICTOR"]["Size"] = UDim2.new(0, 167, 0, 54);
+unexpected_UI["PREDICTOR"]["Position"] = UDim2.new(0, 25, 0.5, -27);
+unexpected_UI["PREDICTOR"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["PREDICTOR"]["Text"] = [[]];
+unexpected_UI["PREDICTOR"]["ZIndex"] = 0
+unexpected_UI["PREDICTOR"]["BackgroundTransparency"] = 1;
 
--- StarterGui.public.Pill.CLI
-G2L["5"] = Instance.new("TextBox", G2L["2"]);
-G2L["5"]["CursorPosition"] = -1;
-G2L["5"]["Name"] = [[CLI]];
-G2L["5"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["5"]["PlaceholderColor3"] = Color3.fromRGB(120, 120, 120);
-G2L["5"]["BorderSizePixel"] = 0;
-G2L["5"]["TextWrapped"] = true;
-G2L["5"]["TextSize"] = 20;
-G2L["5"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["5"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["5"]["PlaceholderText"] = [[unexpected ]]..currentVersion;
-G2L["5"]["Size"] = UDim2.new(0, 167, 0, 54);
-G2L["5"]["Position"] = UDim2.new(0, 25, 0.5, -27);
-G2L["5"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["5"]["Text"] = [[]];
-G2L["5"]["ClearTextOnFocus"] = false;
-G2L["5"]["ZIndex"] = 1
-G2L["5"]["BackgroundTransparency"] = 1;
+unexpected_UI["MENU"] = Instance.new("ImageButton", unexpected_UI["PILL"]);
+unexpected_UI["MENU"]["BorderSizePixel"] = 0;
+unexpected_UI["MENU"]["BackgroundTransparency"] = 1;
+unexpected_UI["MENU"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["MENU"]["ImageColor3"] = FQ.COLORS.ACCENT;
+unexpected_UI["MENU"]["Image"] = [[rbxassetid://10734887784]];
+unexpected_UI["MENU"]["Size"] = UDim2.new(0, 30, 0, 30);
+unexpected_UI["MENU"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["MENU"]["Name"] = [[Menu]];
+unexpected_UI["MENU"]["Position"] = UDim2.new(0.83776, 0, 0.28169, 0);
+CREATE_ASPECT(unexpected_UI["MENU"])
 
--- StarterGui.public.Pill.Predictor
-G2L["5a"] = Instance.new("TextLabel", G2L["2"]);
-G2L["5a"]["Name"] = [[Predictor]];
-G2L["5a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["5a"]["BorderSizePixel"] = 0;
-G2L["5a"]["TextWrapped"] = true;
-G2L["5a"]["TextSize"] = 20;
-G2L["5a"]["TextColor3"] = Color3.fromRGB(50,50,50);
-G2L["5a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["5a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["5a"]["Size"] = UDim2.new(0, 167, 0, 54);
-G2L["5a"]["Position"] = UDim2.new(0, 25, 0.5, -27);
-G2L["5a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["5a"]["Text"] = [[]];
-G2L["5a"]["ZIndex"] = 0
-G2L["5a"]["BackgroundTransparency"] = 1;
+unexpected_UI["MENUFRAME"] = Instance.new("Frame", unexpected_UI["PILL"]);
+unexpected_UI["MENUFRAME"]["BorderSizePixel"] = 0;
+unexpected_UI["MENUFRAME"]["BackgroundColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["MENUFRAME"]["ClipsDescendants"] = true;
+unexpected_UI["MENUFRAME"]["Size"] = UDim2.new(0, 339, 0, 348);
+unexpected_UI["MENUFRAME"]["Position"] = UDim2.new(0.5, -169, 1, -428);
+unexpected_UI["MENUFRAME"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["MENUFRAME"]["Name"] = [[MenuFrame]];
+unexpected_UI["MENUFRAME"]["Visible"] = false;
+CREATE_CORNER(unexpected_UI["MENUFRAME"], 0.1, 0)
+CREATE_STROKE(unexpected_UI["MENUFRAME"], FQ.COLORS.STROKE);
 
--- StarterGui.public.Pill.Menu
-G2L["6"] = Instance.new("ImageButton", G2L["2"]);
-G2L["6"]["BorderSizePixel"] = 0;
-G2L["6"]["BackgroundTransparency"] = 1;
-G2L["6"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["6"]["ImageColor3"] = Color3.fromRGB(100, 100, 100);
-G2L["6"]["Image"] = [[rbxassetid://10734887784]];
-G2L["6"]["Size"] = UDim2.new(0, 30, 0, 30);
-G2L["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["6"]["Name"] = [[Menu]];
-G2L["6"]["Position"] = UDim2.new(0.83776, 0, 0.28169, 0);
 
--- StarterGui.public.Pill.Menu.UIAspectRatioConstraint
-G2L["7"] = Instance.new("UIAspectRatioConstraint", G2L["6"]);
+unexpected_UI["LABEL"] = Instance.new("TextLabel", unexpected_UI["MENUFRAME"]);
+unexpected_UI["LABEL"]["TextWrapped"] = true;
+unexpected_UI["LABEL"]["ZIndex"] = 2;
+unexpected_UI["LABEL"]["TextSize"] = 25;
+unexpected_UI["LABEL"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["LABEL"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["LABEL"]["FontFace"] = FQ.FONTS.BOLD;
+unexpected_UI["LABEL"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["LABEL"]["BackgroundTransparency"] = 1;
+unexpected_UI["LABEL"]["Size"] = UDim2.new(0, 127, 0, 19);
+unexpected_UI["LABEL"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["LABEL"]["Text"] = [[menu]];
+unexpected_UI["LABEL"]["Name"] = [[Label]];
+unexpected_UI["LABEL"]["Position"] = UDim2.new(0.0885, 0, 0.07471, 0);
 
--- StarterGui.public.Pill.MenuFrame
-G2L["9"] = Instance.new("Frame", G2L["2"]);
-G2L["9"]["BorderSizePixel"] = 0;
-G2L["9"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["9"]["ClipsDescendants"] = true;
-G2L["9"]["Size"] = UDim2.new(0, 339, 0, 348);
-G2L["9"]["Position"] = UDim2.new(0.5, -169, 1, -428);
-G2L["9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["9"]["Name"] = [[MenuFrame]];
-G2L["9"]["Visible"] = false;
+unexpected_UI["CMDS_BUTTON"] = Instance.new("TextButton", unexpected_UI["MENUFRAME"]);
+unexpected_UI["CMDS_BUTTON"]["BorderSizePixel"] = 0;
+unexpected_UI["CMDS_BUTTON"]["TextSize"] = 18;
+unexpected_UI["CMDS_BUTTON"]["TextColor3"] = FQ.COLORS.TEXT_MAIN
+unexpected_UI["CMDS_BUTTON"]["BackgroundColor3"] = FQ.COLORS.BACKGROUND
+unexpected_UI["CMDS_BUTTON"]["FontFace"] = FQ.FONTS.REGULAR
+unexpected_UI["CMDS_BUTTON"]["Size"] = UDim2.new(0, 278, 0, 51)
+unexpected_UI["CMDS_BUTTON"]["BorderColor3"] = FQ.COLORS.BACKGROUND
+unexpected_UI["CMDS_BUTTON"]["Text"] = [[commands]]
+unexpected_UI["CMDS_BUTTON"]["Name"] = [[cmdsButton]];
+unexpected_UI["CMDS_BUTTON"]["Visible"] = true;
+unexpected_UI["CMDS_BUTTON"]["Position"] = UDim2.new(0.0885, 0, 0.17241, 0);
+CREATE_CORNER(unexpected_UI["CMDS_BUTTON"], 0.3, 0)
+CREATE_STROKE(unexpected_UI["CMDS_BUTTON"], FQ.COLORS.STROKE);
 
--- StarterGui.public.Pill.MenuFrame.Corner
-G2L["a"] = Instance.new("UICorner", G2L["9"]);
-G2L["a"]["Name"] = [[Corner]];
-G2L["a"]["CornerRadius"] = UDim.new(0.1, 0);
 
--- StarterGui.public.Pill.MenuFrame.Stroke
-G2L["b"] = Instance.new("UIStroke", G2L["9"]);
-G2L["b"]["Name"] = [[Stroke]];
-G2L["b"]["Color"] = Color3.fromRGB(50, 50, 50);
+unexpected_UI["DISCORD"] = Instance.new("TextButton", unexpected_UI["MENUFRAME"]);
+unexpected_UI["DISCORD"]["BorderSizePixel"] = 0;
+unexpected_UI["DISCORD"]["TextSize"] = 18;
+unexpected_UI["DISCORD"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["DISCORD"]["BackgroundColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["DISCORD"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["DISCORD"]["Size"] = UDim2.new(0, 278, 0, 51);
+unexpected_UI["DISCORD"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["DISCORD"]["Text"] = [[discord]];
+unexpected_UI["DISCORD"]["Name"] = [[discordButton]];
+unexpected_UI["DISCORD"]["Visible"] = true;
+unexpected_UI["DISCORD"]["Position"] = UDim2.new(0.0885, 0, 0.35991, 0);
 
--- StarterGui.public.Pill.MenuFrame.Label
-G2L["c"] = Instance.new("TextLabel", G2L["9"]);
-G2L["c"]["TextWrapped"] = true;
-G2L["c"]["ZIndex"] = 2;
-G2L["c"]["TextSize"] = 25;
-G2L["c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["c"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-G2L["c"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["c"]["BackgroundTransparency"] = 1;
-G2L["c"]["Size"] = UDim2.new(0, 127, 0, 19);
-G2L["c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["c"]["Text"] = [[menu]];
-G2L["c"]["Name"] = [[Label]];
-G2L["c"]["Position"] = UDim2.new(0.0885, 0, 0.07471, 0);
-
--- StarterGui.public.Pill.MenuFrame.cmdsButton
-G2L["d"] = Instance.new("TextButton", G2L["9"]);
-G2L["d"]["BorderSizePixel"] = 0;
-G2L["d"]["TextSize"] = 18;
-G2L["d"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["d"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["d"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["d"]["Size"] = UDim2.new(0, 278, 0, 50);
-G2L["d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["d"]["Text"] = [[commands]];
-G2L["d"]["Name"] = [[cmdsButton]];
-G2L["d"]["Visible"] = true;
-G2L["d"]["Position"] = UDim2.new(0.0885, 0, 0.17241, 0);
-
--- StarterGui.public.Pill.MenuFrame.cmdsButton.Corner
-G2L["e"] = Instance.new("UICorner", G2L["d"]);
-G2L["e"]["Name"] = [[Corner]];
-G2L["e"]["CornerRadius"] = UDim.new(0.3, 0);
-
--- StarterGui.public.Pill.MenuFrame.cmdsButton.Stroke
-G2L["f"] = Instance.new("UIStroke", G2L["d"]);
-G2L["f"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-G2L["f"]["Name"] = [[Stroke]];
-G2L["f"]["Color"] = Color3.fromRGB(50, 50, 50);
-
--- StarterGui.public.Pill.MenuFrame.discordButton
-G2L["10"] = Instance.new("TextButton", G2L["9"]);
-G2L["10"]["BorderSizePixel"] = 0;
-G2L["10"]["TextSize"] = 18;
-G2L["10"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["10"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["10"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["10"]["Size"] = UDim2.new(0, 278, 0, 51);
-G2L["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["10"]["Text"] = [[discord]];
-G2L["10"]["Name"] = [[discordButton]];
-G2L["10"]["Visible"] = true;
-G2L["10"]["Position"] = UDim2.new(0.0885, 0, 0.35991, 0);
-
-G2L["10"].MouseButton1Click:Connect(function()
+unexpected_UI["DISCORD"].MouseButton1Click:Connect(function()
 	setclipboard("https://discord.gg/J73SnGB2y2")
 	if typeof(httprequest) == "function" then
 		httprequest({
@@ -224,100 +240,75 @@ G2L["10"].MouseButton1Click:Connect(function()
 	end
 end)
 
--- StarterGui.public.Pill.MenuFrame.discordButton.Corner
-G2L["11"] = Instance.new("UICorner", G2L["10"]);
-G2L["11"]["Name"] = [[Corner]];
-G2L["11"]["CornerRadius"] = UDim.new(0.3, 0);
+CREATE_CORNER(unexpected_UI["DISCORD"], 0.3, 0)
+CREATE_STROKE(unexpected_UI["DISCORD"], FQ.COLORS.STROKE);
 
--- StarterGui.public.Pill.MenuFrame.discordButton.Stroke
-G2L["12"] = Instance.new("UIStroke", G2L["10"]);
-G2L["12"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-G2L["12"]["Name"] = [[Stroke]];
-G2L["12"]["Color"] = Color3.fromRGB(50, 50, 50);
+unexpected_UI["INFO"] = Instance.new("TextButton", unexpected_UI["MENUFRAME"]);
+unexpected_UI["INFO"]["BorderSizePixel"] = 0;
+unexpected_UI["INFO"]["TextSize"] = 18;
+unexpected_UI["INFO"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["INFO"]["BackgroundColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["INFO"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["INFO"]["Size"] = UDim2.new(0, 278, 0, 51);
+unexpected_UI["INFO"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["INFO"]["Text"] = [[info]];
+unexpected_UI["INFO"]["Name"] = [[infoButton]];
+unexpected_UI["INFO"]["Visible"] = true;
+unexpected_UI["INFO"]["Position"] = UDim2.new(0.0885, 0, 0.55388, 0);
+CREATE_CORNER(unexpected_UI["INFO"], 0.3, 0)
+CREATE_STROKE(unexpected_UI["INFO"], FQ.COLORS.STROKE);
 
+unexpected_UI["CMDFRAME"] = Instance.new("Frame", unexpected_UI["MENUFRAME"]);
+unexpected_UI["CMDFRAME"]["BorderSizePixel"] = 0;
+unexpected_UI["CMDFRAME"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["CMDFRAME"]["Size"] = UDim2.new(0, 339, 0, 348);
+unexpected_UI["CMDFRAME"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["CMDFRAME"]["Name"] = [[commandFrame]];
+unexpected_UI["CMDFRAME"]["BackgroundTransparency"] = 1;
+unexpected_UI["CMDFRAME"]["Visible"] = false;
 
--- StarterGui.public.Pill.MenuFrame.infoButton
-G2L["13"] = Instance.new("TextButton", G2L["9"]);
-G2L["13"]["BorderSizePixel"] = 0;
-G2L["13"]["TextSize"] = 18;
-G2L["13"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["13"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["13"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["13"]["Size"] = UDim2.new(0, 278, 0, 51);
-G2L["13"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["13"]["Text"] = [[info]];
-G2L["13"]["Name"] = [[infoButton]];
-G2L["13"]["Visible"] = true;
-G2L["13"]["Position"] = UDim2.new(0.0885, 0, 0.55388, 0);
+unexpected_UI["BTNLIST"] = Instance.new("ScrollingFrame", unexpected_UI["CMDFRAME"]);
+unexpected_UI["BTNLIST"]["Active"] = true;
+unexpected_UI["BTNLIST"]["BorderSizePixel"] = 0;
+unexpected_UI["BTNLIST"]["CanvasSize"] = UDim2.new(0, 0, 10, 0);
+unexpected_UI["BTNLIST"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["BTNLIST"]["Name"] = [[buttonList]];
+unexpected_UI["BTNLIST"]["Size"] = UDim2.new(0, 278, 0, 210);
+unexpected_UI["BTNLIST"]["ScrollBarImageColor3"] = FQ.COLORS.ACCENT;
+unexpected_UI["BTNLIST"]["Position"] = UDim2.new(0.0885, 0, 0.32184, 0);
+unexpected_UI["BTNLIST"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["BTNLIST"]["ScrollBarThickness"] = 1;
+unexpected_UI["BTNLIST"]["BackgroundTransparency"] = 1;
 
--- StarterGui.public.Pill.MenuFrame.infoButton.Corner
-G2L["14"] = Instance.new("UICorner", G2L["13"]);
-G2L["14"]["Name"] = [[Corner]];
-G2L["14"]["CornerRadius"] = UDim.new(0.3, 0);
+unexpected_UI["CMDEXAMPLE"] = Instance.new("TextButton");
+unexpected_UI["CMDEXAMPLE"]["BorderSizePixel"] = 0;
+unexpected_UI["CMDEXAMPLE"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["CMDEXAMPLE"]["TextSize"] = 18;
+unexpected_UI["CMDEXAMPLE"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["CMDEXAMPLE"]["BackgroundColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["CMDEXAMPLE"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["CMDEXAMPLE"]["Size"] = UDim2.new(0, 278, 0, 33);
+unexpected_UI["CMDEXAMPLE"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["CMDEXAMPLE"]["Text"] = [[command / command]];
+unexpected_UI["CMDEXAMPLE"]["Name"] = [[commandExample]];
+unexpected_UI["CMDEXAMPLE"]["Visible"] = false;
 
--- StarterGui.public.Pill.MenuFrame.infoButton.Stroke
-G2L["15"] = Instance.new("UIStroke", G2L["13"]);
-G2L["15"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-G2L["15"]["Name"] = [[Stroke]];
-G2L["15"]["Color"] = Color3.fromRGB(50, 50, 50);
-
--- StarterGui.public.Pill.MenuFrame.commandFrame
-G2L["16"] = Instance.new("Frame", G2L["9"]);
-G2L["16"]["BorderSizePixel"] = 0;
-G2L["16"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["16"]["Size"] = UDim2.new(0, 339, 0, 348);
-G2L["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["16"]["Name"] = [[commandFrame]];
-G2L["16"]["BackgroundTransparency"] = 1;
-G2L["16"]["Visible"] = false;
-
--- StarterGui.public.Pill.MenuFrame.commandFrame.buttonList
-G2L["17"] = Instance.new("ScrollingFrame", G2L["16"]);
-G2L["17"]["Active"] = true;
-G2L["17"]["BorderSizePixel"] = 0;
-G2L["17"]["CanvasSize"] = UDim2.new(0, 0, 10, 0);
-G2L["17"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["17"]["Name"] = [[buttonList]];
-G2L["17"]["Size"] = UDim2.new(0, 278, 0, 210);
-G2L["17"]["ScrollBarImageColor3"] = Color3.fromRGB(100, 100, 100);
-G2L["17"]["Position"] = UDim2.new(0.0885, 0, 0.32184, 0);
-G2L["17"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["17"]["ScrollBarThickness"] = 1;
-G2L["17"]["BackgroundTransparency"] = 1;
-
--- StarterGui.public.Pill.MenuFrame.commandFrame.buttonList.commandExample
-G2L["19"] = Instance.new("TextButton");
-G2L["19"]["BorderSizePixel"] = 0;
-G2L["19"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["19"]["TextSize"] = 18;
-G2L["19"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["19"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["19"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["19"]["Size"] = UDim2.new(0, 278, 0, 33);
-G2L["19"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["19"]["Text"] = [[command / command]];
-G2L["19"]["Name"] = [[commandExample]];
-G2L["19"]["Visible"] = false;
-
--- StarterGui.public.Pill.MenuFrame.commandFrame.commandBack
-G2L["1a"] = Instance.new("ImageButton", G2L["16"]);
-G2L["1a"]["BorderSizePixel"] = 0;
-G2L["1a"]["BackgroundTransparency"] = 1;
-G2L["1a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["1a"]["ImageColor3"] = Color3.fromRGB(100, 100, 100);
-G2L["1a"]["Image"] = [[rbxassetid://10709812784]];
-G2L["1a"]["Size"] = UDim2.new(0, 38, 0, 30);
-G2L["1a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["1a"]["Name"] = [[commandBack]];
-G2L["1a"]["Position"] = UDim2.new(0.0885, 0, 0.82759, 0);
-
--- StarterGui.public.Pill.MenuFrame.commandFrame.commandBack.UIAspectRatioConstraint
-G2L["1b"] = Instance.new("UIAspectRatioConstraint", G2L["1a"]);
+unexpected_UI["CMDBACK"] = Instance.new("ImageButton", unexpected_UI["CMDFRAME"]);
+unexpected_UI["CMDBACK"]["BorderSizePixel"] = 0;
+unexpected_UI["CMDBACK"]["BackgroundTransparency"] = 1;
+unexpected_UI["CMDBACK"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["CMDBACK"]["ImageColor3"] = FQ.COLORS.ACCENT;
+unexpected_UI["CMDBACK"]["Image"] = [[rbxassetid://10709812784]];
+unexpected_UI["CMDBACK"]["Size"] = UDim2.new(0, 38, 0, 30);
+unexpected_UI["CMDBACK"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["CMDBACK"]["Name"] = [[commandBack]];
+unexpected_UI["CMDBACK"]["Position"] = UDim2.new(0.0885, 0, 0.82759, 0);
+CREATE_ASPECT(unexpected_UI["CMDBACK"])
 
 local unexpected = {}
 local commandListData = {}
 local index = 0
-function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
+function unexpected:addcmd(name, desc, func, aliases, usageArgs)
 	aliases = aliases or {}
 	usageArgs = usageArgs or {}
 
@@ -336,22 +327,22 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 		commandListData[string.lower(alias)] = entry
 	end
 
-	local btn = G2L["19"]:Clone()
+	local btn = unexpected_UI["CMDEXAMPLE"]:Clone()
 	local allNames = {displayName}
 	for _, alias in ipairs(aliases) do table.insert(allNames, alias) end
 	btn.Text = table.concat(allNames, " / ")
 	btn.Visible = true
 	btn.Position = UDim2.new(0, 0, 0, index * 32)
-	btn.Parent = G2L["17"]
+	btn.Parent = unexpected_UI["BTNLIST"]
 
 	local usage = "usage: " .. actualName
 	if #usageArgs > 0 then usage = usage .. " [" .. table.concat(usageArgs, "] [") .. "]" end
 
 	local tooltip = Instance.new("TextLabel")
-	tooltip.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	tooltip.BackgroundColor3 = FQ.COLORS.BACKGROUND
 	tooltip.Visible = false
 	tooltip.Font = Enum.Font.Gotham
-	tooltip.TextColor3 = Color3.fromRGB(220, 220, 220)
+	tooltip.TextColor3 = FQ.COLORS.TEXT_MAIN
 	tooltip.TextSize = 18
 	tooltip.TextWrapped = true
 	tooltip.TextXAlignment = Enum.TextXAlignment.Left
@@ -359,12 +350,12 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	tooltip.ZIndex = 9999
 	tooltip.AutomaticSize = Enum.AutomaticSize.XY
 	tooltip.Size = UDim2.new(0, 300, 0, 0)
-	tooltip.Parent = G2L["1"]
+	tooltip.Parent = unexpected_UI["UI"]
 	tooltip.BorderSizePixel = 0
 
 	local toolst = Instance.new("UIStroke")
 	toolst.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	toolst.Color = Color3.fromRGB(50, 50, 50)
+	toolst.Color = FQ.COLORS.STROKE
 	toolst.Parent = tooltip
 
 	local corner = Instance.new("UICorner")
@@ -410,13 +401,13 @@ function unexpected:AddCommand(name, desc, func, aliases, usageArgs)
 	end)
 
 	btn.MouseButton1Click:Connect(function()
-		G2L["5"].Text = actualName
+		unexpected_UI["CLI"].Text = actualName
 		task.wait(0.01)
-		G2L["5"]:CaptureFocus()
+		unexpected_UI["CLI"]:CaptureFocus()
 	end)
 
 	index += 1
-	G2L["17"].CanvasSize = UDim2.new(0, 0, 0, index * 32)
+	unexpected_UI["BTNLIST"].CanvasSize = UDim2.new(0, 0, 0, index * 32)
 end
 
 --#notification
@@ -424,13 +415,13 @@ local notificationQueue = {}
 local isNotif = false
 local notifUI = Instance.new("Frame")
 notifUI.Name = "Notification"
-notifUI.Parent = G2L["1"]
-notifUI.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+notifUI.Parent = unexpected_UI["UI"]
+notifUI.BackgroundColor3 = FQ.COLORS.BACKGROUND
 notifUI.Position = UDim2.new(1, -378, 0.962686539, -189)
 notifUI.Size = UDim2.new(0, 328, 0, 169)
 notifUI.Visible = false
 Instance.new("UICorner", notifUI).CornerRadius = UDim.new(0.2, 0)
-Instance.new("UIStroke", notifUI).Color = Color3.fromRGB(50, 50, 50)
+Instance.new("UIStroke", notifUI).Color = FQ.COLORS.STROKE
  
 local notiftitle = Instance.new("TextLabel", notifUI)
 notiftitle.Name = "Title"
@@ -439,7 +430,7 @@ notiftitle.Position = UDim2.new(0.088, 0, 0.176, 0)
 notiftitle.Size = UDim2.new(0, 250, 0, 25)
 notiftitle.Font = Enum.Font.GothamBold
 notiftitle.Text = "Title"
-notiftitle.TextColor3 = Color3.fromRGB(220, 220, 220)
+notiftitle.TextColor3 = FQ.COLORS.TEXT_MAIN
 notiftitle.TextSize = 25
 notiftitle.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -450,7 +441,7 @@ notiftext.Position = UDim2.new(0.088, 0, 0.36, 0)
 notiftext.Size = UDim2.new(0, 250, 0, 60)
 notiftext.Font = Enum.Font.Gotham
 notiftext.Text = "Description"
-notiftext.TextColor3 = Color3.fromRGB(220, 220, 220)
+notiftext.TextColor3 = FQ.COLORS.TEXT_MAIN
 notiftext.TextSize = 20
 notiftext.TextWrapped = true
 notiftext.TextXAlignment = Enum.TextXAlignment.Left
@@ -462,7 +453,6 @@ loadingBar.BackgroundColor3 = Color3.fromRGB(99, 99, 99)
 loadingBar.Position = UDim2.new(0.09, 0, 0, 0)
 loadingBar.Size = UDim2.new(0.82, 0,0, 1)
 
--- Notification logic
 local notifPos = notifUI.Position
 
 local function notifQueue()
@@ -550,8 +540,8 @@ function unexpected:notify(title, ...)
 end
 
 --#inputs
-G2L["5"]:GetPropertyChangedSignal("Text"):Connect(function()
-	local input = G2L["5"].Text
+unexpected_UI["CLI"]:GetPropertyChangedSignal("Text"):Connect(function()
+	local input = unexpected_UI["CLI"].Text
 	local cmdName = string.match(input, "^%S+") or ""
 	local suggestion = ""
 
@@ -571,12 +561,12 @@ G2L["5"]:GetPropertyChangedSignal("Text"):Connect(function()
 		end
 	end
 
-	G2L["5a"].Text = suggestion
+	unexpected_UI["PREDICTOR"].Text = suggestion
 end)
 
-G2L["5"].FocusLost:Connect(function(enterPressed)
+unexpected_UI["CLI"].FocusLost:Connect(function(enterPressed)
 	if enterPressed then
-		local inputText = G2L["5"].Text
+		local inputText = unexpected_UI["CLI"].Text
 		local cmdName, argsText = string.match(inputText, "^(%S+)%s*(.*)$")
 		if not cmdName then return end
 
@@ -589,34 +579,33 @@ G2L["5"].FocusLost:Connect(function(enterPressed)
 			cmd.Execute(table.unpack(args))
 		end
 
-		G2L["5"].Text = ""
-		G2L["5a"].Text = ""
+		unexpected_UI["CLI"].Text = ""
+		unexpected_UI["PREDICTOR"].Text = ""
 	end
 end)
 --#inputsEnd
 
--- StarterGui.public.Pill.MenuFrame.commandFrame.searchBar
-G2L["1c"] = Instance.new("TextBox", G2L["16"]);
-G2L["1c"]["CursorPosition"] = -1;
-G2L["1c"]["Name"] = [[searchBar]];
-G2L["1c"]["PlaceholderColor3"] = Color3.fromRGB(120, 120, 120);
-G2L["1c"]["BorderSizePixel"] = 0;
-G2L["1c"]["TextSize"] = 18;
-G2L["1c"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["1c"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["1c"]["PlaceholderText"] = [[search a command]];
-G2L["1c"]["Size"] = UDim2.new(0, 278, 0, 41);
-G2L["1c"]["Position"] = UDim2.new(0.0885, 0, 0.17816, 0);
-G2L["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["1c"]["Text"] = [[]];
-G2L["1c"]["BackgroundTransparency"] = 1;
+unexpected_UI["SEARCHBAR"] = Instance.new("TextBox", unexpected_UI["CMDFRAME"]);
+unexpected_UI["SEARCHBAR"]["CursorPosition"] = -1;
+unexpected_UI["SEARCHBAR"]["Name"] = [[searchBar]];
+unexpected_UI["SEARCHBAR"]["PlaceholderColor3"] = FQ.COLORS.TEXT_DIM;
+unexpected_UI["SEARCHBAR"]["BorderSizePixel"] = 0;
+unexpected_UI["SEARCHBAR"]["TextSize"] = 18;
+unexpected_UI["SEARCHBAR"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["SEARCHBAR"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["SEARCHBAR"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["SEARCHBAR"]["PlaceholderText"] = [[search a command]];
+unexpected_UI["SEARCHBAR"]["Size"] = UDim2.new(0, 278, 0, 41);
+unexpected_UI["SEARCHBAR"]["Position"] = UDim2.new(0.0885, 0, 0.17816, 0);
+unexpected_UI["SEARCHBAR"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["SEARCHBAR"]["Text"] = [[]];
+unexpected_UI["SEARCHBAR"]["BackgroundTransparency"] = 1;
 
 local function updateList(filter)
 	filter = string.lower(filter)
 	local all, visible = {}, {}
 
-	for _, c in ipairs(G2L["17"]:GetChildren()) do
+	for _, c in ipairs(unexpected_UI["BTNLIST"]:GetChildren()) do
 		if c:IsA("TextButton") then
 			table.insert(all, c)
 			if c.Visible then table.insert(visible, c) end
@@ -641,224 +630,194 @@ local function updateList(filter)
 	end
 end
 
-G2L["1c"]:GetPropertyChangedSignal("Text"):Connect(function()
-	updateList(G2L["1c"].Text)
+unexpected_UI["SEARCHBAR"]:GetPropertyChangedSignal("Text"):Connect(function()
+	updateList(unexpected_UI["SEARCHBAR"].Text)
 end)
 --#searchEnd
 
--- StarterGui.public.Pill.MenuFrame.infoFrame
-G2L["1d"] = Instance.new("Frame", G2L["9"]);
-G2L["1d"]["Visible"] = false;
-G2L["1d"]["BorderSizePixel"] = 0;
-G2L["1d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["1d"]["Size"] = UDim2.new(0, 339, 0, 348);
-G2L["1d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["1d"]["Name"] = [[infoFrame]];
+unexpected_UI["INFOFRAME"] = Instance.new("Frame", unexpected_UI["MENUFRAME"]);
+unexpected_UI["INFOFRAME"]["Visible"] = false;
+unexpected_UI["INFOFRAME"]["BorderSizePixel"] = 0;
+unexpected_UI["INFOFRAME"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["INFOFRAME"]["Size"] = UDim2.new(0, 339, 0, 348);
+unexpected_UI["INFOFRAME"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["INFOFRAME"]["Name"] = [[infoFrame]];
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.UIGradient
-G2L["1e"] = Instance.new("UIGradient", G2L["1d"]);
-G2L["1e"]["Rotation"] = -109;
-G2L["1e"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 0, 0)),ColorSequenceKeypoint.new(0.225, Color3.fromRGB(0, 0, 0)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(50, 0, 0))};
+unexpected_UI["PROFILEGRADIENT"] = Instance.new("UIGradient", unexpected_UI["INFOFRAME"]);
+unexpected_UI["PROFILEGRADIENT"]["Rotation"] = -109;
+unexpected_UI["PROFILEGRADIENT"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, FQ.COLORS.BACKGROUND),ColorSequenceKeypoint.new(0.225, FQ.COLORS.BACKGROUND),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(50, 0, 0))};
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.profile
-G2L["1f"] = Instance.new("ImageLabel", G2L["1d"]);
-G2L["1f"]["BorderSizePixel"] = 0;
-G2L["1f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
--- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-G2L["1f"]["Image"] = [[rbxassetid://12850203451]];
-G2L["1f"]["Size"] = UDim2.new(0, 100, 0, 100);
-G2L["1f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["1f"]["BackgroundTransparency"] = 1;
-G2L["1f"]["Name"] = [[profile]];
-G2L["1f"]["Position"] = UDim2.new(0.0885, 0, 0.18391, 0);
+unexpected_UI["PROFILEIMAGE"] = Instance.new("ImageLabel", unexpected_UI["INFOFRAME"]);
+unexpected_UI["PROFILEIMAGE"]["BorderSizePixel"] = 0;
+unexpected_UI["PROFILEIMAGE"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["PROFILEIMAGE"]["Image"] = [[rbxassetid://12850203451]];
+unexpected_UI["PROFILEIMAGE"]["Size"] = UDim2.new(0, 100, 0, 100);
+unexpected_UI["PROFILEIMAGE"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["PROFILEIMAGE"]["BackgroundTransparency"] = 1;
+unexpected_UI["PROFILEIMAGE"]["Name"] = [[profile]];
+unexpected_UI["PROFILEIMAGE"]["Position"] = UDim2.new(0.0885, 0, 0.18391, 0);
+CREATE_CORNER(unexpected_UI["PROFILEIMAGE"], 1, 0)
+CREATE_CORNER(unexpected_UI["INFOFRAME"], 1, 0)
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.profile.Corner
-G2L["20"] = Instance.new("UICorner", G2L["1f"]);
-G2L["20"]["Name"] = [[Corner]];
-G2L["20"]["CornerRadius"] = UDim.new(1, 0);
+unexpected_UI["INFONAME"] = Instance.new("TextLabel", unexpected_UI["INFOFRAME"]);
+unexpected_UI["INFONAME"]["BorderSizePixel"] = 0;
+unexpected_UI["INFONAME"]["TextSize"] = 20;
+unexpected_UI["INFONAME"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["INFONAME"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["INFONAME"]["FontFace"] = FQ.FONTS.ITALIC;
+unexpected_UI["INFONAME"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["INFONAME"]["BackgroundTransparency"] = 1;
+unexpected_UI["INFONAME"]["Size"] = UDim2.new(0, 85, 0, 26);
+unexpected_UI["INFONAME"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["INFONAME"]["Text"] = LP.Name;
+unexpected_UI["INFONAME"]["Name"] = [[name]];
+unexpected_UI["INFONAME"]["Position"] = UDim2.new(0.43068, 0, 0.25287, 0);
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.Corner
-G2L["21"] = Instance.new("UICorner", G2L["1d"]);
-G2L["21"]["Name"] = [[Corner]];
-G2L["21"]["CornerRadius"] = UDim.new(0.1, 0);
+unexpected_UI["STATUS"] = Instance.new("TextLabel", unexpected_UI["INFOFRAME"]);
+unexpected_UI["STATUS"]["BorderSizePixel"] = 0;
+unexpected_UI["STATUS"]["TextSize"] = 16;
+unexpected_UI["STATUS"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["STATUS"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["STATUS"]["FontFace"] = FQ.FONTS.ITALIC;
+unexpected_UI["STATUS"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["STATUS"]["BackgroundTransparency"] = 1;
+unexpected_UI["STATUS"]["Size"] = UDim2.new(0, 168, 0, 26);
+unexpected_UI["STATUS"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["STATUS"]["Text"] = [[using unexpected]];
+unexpected_UI["STATUS"]["Name"] = [[status]];
+unexpected_UI["STATUS"]["Position"] = UDim2.new(0.43068, 0, 0.32759, 0);
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.name
-G2L["22"] = Instance.new("TextLabel", G2L["1d"]);
-G2L["22"]["BorderSizePixel"] = 0;
-G2L["22"]["TextSize"] = 20;
-G2L["22"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["22"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["22"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Italic);
-G2L["22"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["22"]["BackgroundTransparency"] = 1;
-G2L["22"]["Size"] = UDim2.new(0, 85, 0, 26);
-G2L["22"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["22"]["Text"] = LP.Name;
-G2L["22"]["Name"] = [[name]];
-G2L["22"]["Position"] = UDim2.new(0.43068, 0, 0.25287, 0);
+unexpected_UI["WTF"] = Instance.new("TextLabel", unexpected_UI["INFOFRAME"]);
+unexpected_UI["WTF"]["BorderSizePixel"] = 0;
+unexpected_UI["WTF"]["TextSize"] = 20;
+unexpected_UI["WTF"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["WTF"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["WTF"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["WTF"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["WTF"]["BackgroundTransparency"] = 1;
+unexpected_UI["WTF"]["Size"] = UDim2.new(0, 265, 0, 26);
+unexpected_UI["WTF"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["WTF"].Text = "this is wip"
+unexpected_UI["WTF"]["Name"] = [[position]];
+unexpected_UI["WTF"]["Position"] = UDim2.new(0.10914, 0, 0.52299, 0);
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.status
-G2L["23"] = Instance.new("TextLabel", G2L["1d"]);
-G2L["23"]["BorderSizePixel"] = 0;
-G2L["23"]["TextSize"] = 16;
-G2L["23"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["23"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["23"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Italic);
-G2L["23"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["23"]["BackgroundTransparency"] = 1;
-G2L["23"]["Size"] = UDim2.new(0, 168, 0, 26);
-G2L["23"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["23"]["Text"] = [[using unexpected]];
-G2L["23"]["Name"] = [[status]];
-G2L["23"]["Position"] = UDim2.new(0.43068, 0, 0.32759, 0);
+unexpected_UI["USINGUX"] = Instance.new("TextLabel", unexpected_UI["INFOFRAME"]);
+unexpected_UI["USINGUX"]["BorderSizePixel"] = 0;
+unexpected_UI["USINGUX"]["TextSize"] = 20;
+unexpected_UI["USINGUX"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["USINGUX"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["USINGUX"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["USINGUX"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["USINGUX"]["BackgroundTransparency"] = 1;
+unexpected_UI["USINGUX"]["Size"] = UDim2.new(0, 265, 0, 26);
+unexpected_UI["USINGUX"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["USINGUX"]["Text"] = "using hashed "..currentVersion;
+unexpected_UI["USINGUX"]["Name"] = [[uptime]];
+unexpected_UI["USINGUX"]["Position"] = UDim2.new(0.10914, 0, 0.5977, 0);
 
-G2L["24"] = Instance.new("TextLabel", G2L["1d"]);
-G2L["24"]["BorderSizePixel"] = 0;
-G2L["24"]["TextSize"] = 20;
-G2L["24"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["24"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["24"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["24"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["24"]["BackgroundTransparency"] = 1;
-G2L["24"]["Size"] = UDim2.new(0, 265, 0, 26);
-G2L["24"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["24"].Text = "this is wip"
-G2L["24"]["Name"] = [[position]];
-G2L["24"]["Position"] = UDim2.new(0.10914, 0, 0.52299, 0);
+unexpected_UI["WS"] = Instance.new("TextLabel", unexpected_UI["INFOFRAME"]);
+unexpected_UI["WS"]["BorderSizePixel"] = 0;
+unexpected_UI["WS"]["TextSize"] = 20;
+unexpected_UI["WS"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["WS"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["WS"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["WS"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["WS"]["BackgroundTransparency"] = 1;
+unexpected_UI["WS"]["Size"] = UDim2.new(0, 265, 0, 26);
+unexpected_UI["WS"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["WS"]["Text"] = HUM.WalkSpeed;
+unexpected_UI["WS"]["Name"] = [[walkspeed]];
+unexpected_UI["WS"]["Position"] = UDim2.new(0.10914, 0, 0.67241, 0);
 
-G2L["25"] = Instance.new("TextLabel", G2L["1d"]);
-G2L["25"]["BorderSizePixel"] = 0;
-G2L["25"]["TextSize"] = 20;
-G2L["25"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["25"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["25"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["25"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["25"]["BackgroundTransparency"] = 1;
-G2L["25"]["Size"] = UDim2.new(0, 265, 0, 26);
-G2L["25"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["25"]["Text"] = "using hashed "..currentVersion;
-G2L["25"]["Name"] = [[uptime]];
-G2L["25"]["Position"] = UDim2.new(0.10914, 0, 0.5977, 0);
+unexpected_UI["JP"] = Instance.new("TextLabel", unexpected_UI["INFOFRAME"]);
+unexpected_UI["JP"]["BorderSizePixel"] = 0;
+unexpected_UI["JP"]["TextSize"] = 20;
+unexpected_UI["JP"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["JP"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["JP"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["JP"]["TextColor3"] = FQ.COLORS.TEXT_MAIN;
+unexpected_UI["JP"]["BackgroundTransparency"] = 1;
+unexpected_UI["JP"]["Size"] = UDim2.new(0, 265, 0, 26);
+unexpected_UI["JP"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["JP"]["Text"] = HUM.JumpPower;
+unexpected_UI["JP"]["Name"] = [[jumppower]];
+unexpected_UI["JP"]["Position"] = UDim2.new(0.10914, 0, 0.74713, 0);
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.walkspeed
-G2L["26"] = Instance.new("TextLabel", G2L["1d"]);
-G2L["26"]["BorderSizePixel"] = 0;
-G2L["26"]["TextSize"] = 20;
-G2L["26"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["26"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["26"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["26"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["26"]["BackgroundTransparency"] = 1;
-G2L["26"]["Size"] = UDim2.new(0, 265, 0, 26);
-G2L["26"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["26"]["Text"] = HUM.WalkSpeed;
-G2L["26"]["Name"] = [[walkspeed]];
-G2L["26"]["Position"] = UDim2.new(0.10914, 0, 0.67241, 0);
+unexpected_UI["BACK"] = Instance.new("ImageButton", unexpected_UI["INFOFRAME"]);
+unexpected_UI["BACK"]["BorderSizePixel"] = 0;
+unexpected_UI["BACK"]["BackgroundTransparency"] = 1;
+unexpected_UI["BACK"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["BACK"]["ImageColor3"] = FQ.COLORS.ACCENT;
+unexpected_UI["BACK"]["Image"] = [[rbxassetid://10709812784]];
+unexpected_UI["BACK"]["Size"] = UDim2.new(0, 38, 0, 30);
+unexpected_UI["BACK"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["BACK"]["Name"] = [[infoBack]];
+unexpected_UI["BACK"]["Position"] = UDim2.new(0.0885, 0, 0.82759, 0);
+CREATE_ASPECT(unexpected_UI["29"]);
 
--- StarterGui.public.Pill.MenuFrame.infoFrame.jumppower
-G2L["27"] = Instance.new("TextLabel", G2L["1d"]);
-G2L["27"]["BorderSizePixel"] = 0;
-G2L["27"]["TextSize"] = 20;
-G2L["27"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["27"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["27"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["27"]["TextColor3"] = Color3.fromRGB(220, 220, 220);
-G2L["27"]["BackgroundTransparency"] = 1;
-G2L["27"]["Size"] = UDim2.new(0, 265, 0, 26);
-G2L["27"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["27"]["Text"] = HUM.JumpPower;
-G2L["27"]["Name"] = [[jumppower]];
-G2L["27"]["Position"] = UDim2.new(0.10914, 0, 0.74713, 0);
-
--- StarterGui.public.Pill.MenuFrame.infoFrame.infoBack
-G2L["28"] = Instance.new("ImageButton", G2L["1d"]);
-G2L["28"]["BorderSizePixel"] = 0;
-G2L["28"]["BackgroundTransparency"] = 1;
--- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-G2L["28"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["28"]["ImageColor3"] = Color3.fromRGB(100, 100, 100);
-G2L["28"]["Image"] = [[rbxassetid://10709812784]];
-G2L["28"]["Size"] = UDim2.new(0, 38, 0, 30);
-G2L["28"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["28"]["Name"] = [[infoBack]];
-G2L["28"]["Position"] = UDim2.new(0.0885, 0, 0.82759, 0);
-
--- StarterGui.public.Pill.MenuFrame.infoFrame.infoBack.UIAspectRatioConstraint
-G2L["29"] = Instance.new("UIAspectRatioConstraint", G2L["28"]);
-
--- StarterGui.public.Pill.MenuFrame.Label
-G2L["2a"] = Instance.new("TextLabel", G2L["9"]);
-G2L["2a"]["TextWrapped"] = true;
-G2L["2a"]["ZIndex"] = 2;
-G2L["2a"]["TextSize"] = 17;
-G2L["2a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-G2L["2a"]["TextYAlignment"] = Enum.TextYAlignment.Bottom;
-G2L["2a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-G2L["2a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-G2L["2a"]["TextColor3"] = Color3.fromRGB(100, 100, 100);
-G2L["2a"]["BackgroundTransparency"] = 1;
-G2L["2a"]["Size"] = UDim2.new(0, 163, 0, 19);
-G2L["2a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-G2L["2a"]["Text"] = [[wip]];
-G2L["2a"]["Name"] = [[Label]];
-G2L["2a"]["Position"] = UDim2.new(0.29499, 0, 0.07471, 0);
+unexpected_UI["LABEL2"] = Instance.new("TextLabel", unexpected_UI["MENUFRAME"]);
+unexpected_UI["LABEL2"]["TextWrapped"] = true;
+unexpected_UI["LABEL2"]["ZIndex"] = 2;
+unexpected_UI["LABEL2"]["TextSize"] = 17;
+unexpected_UI["LABEL2"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+unexpected_UI["LABEL2"]["TextYAlignment"] = Enum.TextYAlignment.Bottom;
+unexpected_UI["LABEL2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+unexpected_UI["LABEL2"]["FontFace"] = FQ.FONTS.REGULAR;
+unexpected_UI["LABEL2"]["TextColor3"] = FQ.COLORS.ACCENT;
+unexpected_UI["LABEL2"]["BackgroundTransparency"] = 1;
+unexpected_UI["LABEL2"]["Size"] = UDim2.new(0, 163, 0, 19);
+unexpected_UI["LABEL2"]["BorderColor3"] = FQ.COLORS.BACKGROUND;
+unexpected_UI["LABEL2"]["Text"] = [[wip]];
+unexpected_UI["LABEL2"]["Name"] = [[Label]];
+unexpected_UI["LABEL2"]["Position"] = UDim2.new(0.29499, 0, 0.07471, 0);
 
 --#utils
 local configFile = "unexpected_config.json"
 local defaultConfig = {
-	keepUX = true,
+    keepUX = true,
+    Plugins = {}
 }
 
+CONFIG = CONFIG or {}
+
+local function lc()
+    local config = {}
+    if isfile(configFile) then
+        local success, content = pcall(readfile, configFile)
+        if success and content then
+            local ok, parsed = pcall(function()
+                return HS:JSONDecode(content)
+            end)
+            if ok and typeof(parsed) == "table" then
+                config = parsed
+            end
+        end
+    end
+    for key, default in pairs(defaultConfig) do
+        if config[key] == nil then
+            config[key] = default
+        end
+        getgenv()[key] = config[key]
+    end
+    CONFIG = config
+    return config
+end
+
 function UX_rconfig()
-	local config = {}
-
-	if isfile(configFile) then
-		local success, content = pcall(readfile, configFile)
-		if success and content then
-			local ok, parsed = pcall(function()
-				return HS:JSONDecode(content)
-			end)
-			if ok and typeof(parsed) == "table" then
-				config = parsed
-			end
-		end
-	end
-
-	for key, default in pairs(defaultConfig) do
-		local val = config[key]
-		if val == nil then
-			val = default
-		end
-		config[key] = val
-		getgenv()[key] = val
-	end
-
-	local success, err = pcall(function()
-		writefile(configFile, HS:JSONEncode(config))
-	end)
-	if not success then
-		unexpected:notify("[unexpected]", err)
-	end
+    CONFIG = lc()
+    pcall(writefile, configFile, HS:JSONEncode(CONFIG))
 end
 
 function UX_config()
-	local toSave = {}
-	for key in pairs(defaultConfig) do
-		toSave[key] = getgenv()[key]
-	end
-	local success, err = pcall(function()
-		writefile(configFile, HS:JSONEncode(toSave))
-	end)
-	if not success then
-		unexpected:notify("unexpected", err)
-	end
+    if not CONFIG then CONFIG = lc() end
+    pcall(writefile, configFile, HS:JSONEncode(CONFIG))
 end
 --#utilsEnd
 
 --#imports
-local MENU = G2L["2"]:FindFirstChild("Menu")
-local CLI = G2L["2"]:FindFirstChild("CLI")
-local MENUFRAME = G2L["2"]:WaitForChild("MenuFrame")
+local MENU = unexpected_UI["PILL"]:FindFirstChild("Menu")
+local CLI = unexpected_UI["PILL"]:FindFirstChild("CLI")
+local MENUFRAME = unexpected_UI["PILL"]:WaitForChild("MenuFrame")
 local LASTFOCUSED = os.clock()
 local HIDDEN = false
 
@@ -868,15 +827,15 @@ indicator.Position = UDim2.new(0, 20, 1, -40)
 indicator.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 indicator.Visible = false
 indicator.ZIndex = 20
-indicator.Parent = G2L["2"].Parent
+indicator.Parent = unexpected_UI["PILL"].Parent
 indicator.BorderSizePixel = 0
 Instance.new("UICorner", indicator).CornerRadius = UDim.new(1, 0)
 --#importesEnd
 
 --#initiliaze
-G2L["2"].AnchorPoint = Vector2.new(0.5, 0.5)
-G2L["2"].Position = UDim2.new(0.5, 0, 1, -150)
-G2L["2"].Visible = false
+unexpected_UI["PILL"].AnchorPoint = Vector2.new(0.5, 0.5)
+unexpected_UI["PILL"].Position = UDim2.new(0.5, 0, 1, -150)
+unexpected_UI["PILL"].Visible = false
 MENUFRAME.AnchorPoint = Vector2.new(0.5, 1)
 MENUFRAME.Position = UDim2.new(0.5, 0, 1, -80)
 MENUFRAME.Size = UDim2.new(0, 339, 0, 0)
@@ -925,7 +884,7 @@ end
 
 RS.Heartbeat:Connect(function()
 	local m = LP:GetMouse()
-	local mp, pos, size = Vector2.new(m.X, m.Y), G2L["2"].AbsolutePosition, G2L["2"].AbsoluteSize
+	local mp, pos, size = Vector2.new(m.X, m.Y), unexpected_UI["PILL"].AbsolutePosition, unexpected_UI["PILL"].AbsoluteSize
 	shithover = mp.X >= pos.X and mp.X <= pos.X + size.X and mp.Y >= pos.Y and mp.Y <= pos.Y + size.Y
 end)
 
@@ -933,27 +892,29 @@ end)
 local function SHS(hovered)
 	if MOBILE then
 		HOVERED = true
-		G2L["2"].Size, G2L["5"].Size = UDim2.new(0, 339, 0, 71), UDim2.new(0, 230, 0, 54)
-		G2L["6"].ImageTransparency = 0
+		unexpected_UI["PILL"].Size, unexpected_UI["CLI"].Size = UDim2.new(0, 339, 0, 71), UDim2.new(0, 230, 0, 54)
+		unexpected_UI["MENU"].ImageTransparency = 0
 		buttonTP(MENU, 0)
 		return
 	end
 	if MENUON and hovered then
 		HOVERED = true
-		TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
-		TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 230, 0, 54) }):Play()
+		TS:Create(unexpected_UI["PILL"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
+		local NS = UDim2.new(0, 230, 0, 54)
+        TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = NS }):Play()
+        TS:Create(unexpected_UI["PREDICTOR"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = NS }):Play()
 		buttonTP(MENU, 0)
 		return
 	end
 	HOVERED = hovered
 	local gSize = hovered and 339 or 218
 	local cSize = hovered and 230 or 167
-	TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, gSize, 0, 71) }):Play()
+	TS:Create(unexpected_UI["PILL"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, gSize, 0, 71) }):Play()
 	TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, cSize, 0, 54) }):Play()
 	buttonTP(MENU, hovered and 0 or 1)
 end
 
-G2L["2"].InputBegan:Connect(function(input)
+unexpected_UI["PILL"].InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseMovement then
 		shithover = true
 		LASTFOCUSED = os.clock()
@@ -961,7 +922,7 @@ G2L["2"].InputBegan:Connect(function(input)
 	end
 end)
 
-G2L["2"].InputEnded:Connect(function(input)
+unexpected_UI["PILL"].InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseMovement then
 		task.delay(0.05, function()
 			shithover = false
@@ -975,8 +936,10 @@ MENU.MouseButton1Click:Connect(function()
 	MENUON = not MENUON
 	if MENUON then
 		MENUFRAME.Size, MENUFRAME.Visible = UDim2.new(0, 339, 0, 0), true
-		TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
-		TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 230, 0, 54) }):Play()
+		TS:Create(unexpected_UI["PILL"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
+		local NS = UDim2.new(0, 230, 0, 54)
+        TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = NS }):Play()
+        TS:Create(unexpected_UI["PREDICTOR"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = NS }):Play()
 		TS:Create(MENUFRAME, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 348) }):Play()
 		buttonTP(MENU, 0)
 	else
@@ -1010,17 +973,17 @@ MENUFRAMES.info:WaitForChild("infoBack").MouseButton1Click:Connect(function()
 end)
 
 local function hidePILL()
-	for _, c in ipairs(G2L["2"]:GetDescendants()) do
+	for _, c in ipairs(unexpected_UI["PILL"]:GetDescendants()) do
 		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
 			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 1 }):Play()
 		elseif c:IsA("ImageLabel") or c:IsA("ImageButton") then
 			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 1 }):Play()
 		end
 	end
-	local shrink = TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 0, 0, 0) })
+	local shrink = TS:Create(unexpected_UI["PILL"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 0, 0, 0) })
 	shrink:Play()
 	shrink.Completed:Once(function()
-		G2L["2"].Visible = false
+		unexpected_UI["PILL"].Visible = false
 		indicator.Visible = true
 	end)
 end
@@ -1034,13 +997,13 @@ end)
 
 local oneMenu = false
 local function showPILL(yn)
-	G2L["2"].Visible = true
-	G2L["2"].Size = UDim2.new(0, 218, 0, 71)
+	unexpected_UI["PILL"].Visible = true
+	unexpected_UI["PILL"].Size = UDim2.new(0, 218, 0, 71)
 	HIDDEN = false
 	LASTFOCUSED = os.clock()
 	indicator.Visible = false
 	if MOBILE and not MENUON then SHS(true) end
-	for _, c in ipairs(G2L["2"]:GetDescendants()) do
+	for _, c in ipairs(unexpected_UI["PILL"]:GetDescendants()) do
 		if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then
 			TS:Create(c, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { TextTransparency = 0 }):Play()
 		elseif c:IsA("ImageLabel") or c:IsA("ImageButton") then
@@ -1068,33 +1031,124 @@ end)
 UIS.InputBegan:Connect(function(input, processed)
 	if not processed and input.KeyCode == Enum.KeyCode.Semicolon then
 		task.wait(0.01)
-		CLI.Text, G2L["5a"].Text = "", ""
+		CLI.Text, unexpected_UI["PREDICTOR"].Text = "", ""
 		CLI:CaptureFocus()
 		LASTFOCUSED = os.clock()
 		showPILL(1)
-		SHS(true)
-		TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
-		TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 230, 0, 54) }):Play()
-		buttonTP(MENU, 0)
+		if shithover or MENUON then
+			unexpected_UI["PILL"].Size = UDim2.new(0, 339, 0, 71)
+			CLI.Size = UDim2.new(0, 230, 0, 54)
+			unexpected_UI["PREDICTOR"].Size = UDim2.new(0, 230, 0, 54)
+			unexpected_UI["MENU"].ImageTransparency = 0
+			buttonTP(MENU, 0)
+		else
+			SHS(true)
+			TS:Create(unexpected_UI["PILL"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 339, 0, 71) }):Play()
+			local NS = UDim2.new(0, 230, 0, 54)
+			TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = NS }):Play()
+			TS:Create(unexpected_UI["PREDICTOR"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = NS }):Play()
+			buttonTP(MENU, 0)
+		end
 	end
 end)
 
 UIS.InputEnded:Connect(function(input, processed)
 	if input.KeyCode == Enum.KeyCode.Semicolon then
 		HOVERED = false
-		if not MENUON and not CLI:IsFocused() then
-			TS:Create(G2L["2"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 218, 0, 71) }):Play()
+		if not shithover and not MENUON and not CLI:IsFocused() then
+			TS:Create(unexpected_UI["PILL"], TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 218, 0, 71) }):Play()
 			TS:Create(CLI, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 167, 0, 54) }):Play()
 			buttonTP(MENU, 1)
 		elseif MENUON then
-			G2L["2"].Size, CLI.Size = UDim2.new(0, 339, 0, 71), UDim2.new(0, 230, 0, 54)
+			unexpected_UI["PILL"].Size, CLI.Size = UDim2.new(0, 339, 0, 71), UDim2.new(0, 230, 0, 54)
 			buttonTP(MENU, 0)
 		end
 	end
 end)
 
+UX_rconfig()
+
+--#pluginSystem
+local PLUGIN_DIR = "unexpected_plugins"
+if not isfolder(PLUGIN_DIR) then
+    makefolder(PLUGIN_DIR)
+end
+
+if type(CONFIG.Plugins) ~= "table" then
+    CONFIG.Plugins = {}
+end
+
+local function LOAD_PLUGIN(NAME)
+    local PATH = string.format("%s/%s.ux", PLUGIN_DIR, NAME)
+    if not isfile(PATH) then
+        unexpected:notify("unexpected", ("Plugin '%s' missing, removed from config."):format(NAME))
+        CONFIG.Plugins[NAME] = nil
+        UX_config()
+        return false
+    end
+
+    local ENV = setmetatable({ unexpected = unexpected }, { __index = getfenv() })
+
+    local OK, RESULT = pcall(function()
+        return setfenv(loadstring(readfile(PATH)), ENV)()
+    end)
+
+    if not OK then
+        unexpected:notify("unexpected", ("Error in plugin '%s': %s"):format(NAME, tostring(RESULT)))
+        return false
+    end
+
+    if type(RESULT) == "table" and RESULT.Commands then
+        for CMD_NAME, CMD in pairs(RESULT.Commands) do
+            if type(CMD.Function) == "function" then
+                unexpected:addcmd(
+                    CMD.ListName or CMD_NAME,
+                    CMD.Description or "No description.",
+                    CMD.Function,
+                    CMD.Aliases or {},
+                    CMD.Args or {}
+                )
+            end
+        end
+    end
+
+    unexpected:notify("unexpected", "Loaded plugin: " .. (RESULT.PluginName or NAME))
+    return true
+end
+
+for NAME, ENABLED in pairs(CONFIG.Plugins) do
+    if ENABLED then
+        LOAD_PLUGIN(NAME)
+    end
+end
+
+unexpected:addcmd("plugin", "Add a plugin", function(NAME)
+    if not NAME or NAME == "" then
+        return unexpected:notify("unexpected", "Usage: plugin [name]")
+    end
+    if LOAD_PLUGIN(NAME) then
+        CONFIG.Plugins[NAME] = true
+        UX_config()
+    end
+end, nil, {"name"})
+
+
+unexpected:addcmd("unplugin", "Remove a plugin", function(NAME)
+    if not NAME or NAME == "" then
+        return unexpected:notify("unexpected", "Usage: unplugin [name]")
+    end
+    if CONFIG.Plugins[NAME] then
+        CONFIG.Plugins[NAME] = nil
+        UX_config()
+        unexpected:notify("unexpected", "Plugin '" .. NAME .. "' removed.")
+    else
+        unexpected:notify("unexpected", "Plugin '" .. NAME .. "' is not enabled.")
+    end
+end, nil, {"name"})
+--#pluginSystemEnd
+
 --#commands
-unexpected:AddCommand("discord", "Discord Server", function()
+unexpected:addcmd("discord", "Discord Server", function()
     setclipboard("https://discord.gg/J73SnGB2y2")
 	if typeof(httprequest) == "function" then
 		httprequest({
@@ -1113,12 +1167,13 @@ unexpected:AddCommand("discord", "Discord Server", function()
 	end
 end, nil, nil)
 
-unexpected:AddCommand("unexspy", "Remote spy", function()
+
+unexpected:addcmd("unexspy", "Remote spy", function()
 	unexpected:notify("unexspy", "Running")
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/hashed-cmd/unexpected-cmd/refs/heads/main/misc/unexspy",true))()
 end, {"remotespy"}, nil)
 
-unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
+unexpected:addcmd("goto", "Teleport to a player", function(targetName)
 	local name = targetName:lower()
 	local target
 	if name == "random" then
@@ -1134,7 +1189,7 @@ unexpected:AddCommand("goto", "Teleport to a player", function(targetName)
 end, nil, {"playerName"})
 
 local noclip
-unexpected:AddCommand("noclip", "Walk through walls", function()
+unexpected:addcmd("noclip", "Walk through walls", function()
     if noclip then return unexpected:notify("noclip", "Already noclipping.") end
     noclip = RS.Stepped:Connect(function()
         for _, p in ipairs(CHAR:GetDescendants()) do
@@ -1143,7 +1198,7 @@ unexpected:AddCommand("noclip", "Walk through walls", function()
     end)
 end)
 
-unexpected:AddCommand("unnoclip", "Disable noclip", function()
+unexpected:addcmd("unnoclip", "Disable noclip", function()
     if noclip then
         noclip:Disconnect()
         noclip = nil
@@ -1153,11 +1208,11 @@ unexpected:AddCommand("unnoclip", "Disable noclip", function()
     end
 end, {"clip"}, nil)
 
-unexpected:AddCommand("reset", "Resets your character", function()
+unexpected:addcmd("reset", "Resets your character", function()
     CHAR:BreakJoints()
 end)
 
-unexpected:AddCommand("clearhats", "Removes all hats", function()
+unexpected:addcmd("clearhats", "Removes all hats", function()
     for _, item in ipairs(CHAR:GetChildren()) do
         if item:IsA("Accessory") then
             item:Destroy()
@@ -1165,25 +1220,25 @@ unexpected:AddCommand("clearhats", "Removes all hats", function()
     end
 end)
 
-unexpected:AddCommand("pos", "Prints your position", function()
+unexpected:addcmd("pos", "Prints your position", function()
     unexpected:notify("position", tostring(HRP.Position))
 end)
 
-unexpected:AddCommand("platformstand", "Toggles PlatformStand", function()
+unexpected:addcmd("platformstand", "Toggles PlatformStand", function()
     HUM.PlatformStand = not HUM.PlatformStand
 end)
 
-unexpected:AddCommand("resetcam", "Resets the camera to your character", function()
+unexpected:addcmd("resetcam", "Resets the camera to your character", function()
     WS.CurrentCamera.CameraSubject = HUM
 end)
 
-unexpected:AddCommand("flip", "Flips your character upside down", function()
+unexpected:addcmd("flip", "Flips your character upside down", function()
     if HRP then
         HRP.CFrame = HRP.CFrame * CFrame.Angles(math.pi, 0, 0)
     end
 end)
 
-unexpected:AddCommand("glide", "Enable glide mode", function()
+unexpected:addcmd("glide", "Enable glide mode", function()
     HUM.JumpPower = 0
     HUM.AutoRotate = false
     local sv = Instance.new("BodyVelocity")
@@ -1193,14 +1248,14 @@ unexpected:AddCommand("glide", "Enable glide mode", function()
     sv.Parent = HRP
 end)
 
-unexpected:AddCommand("unglide", "Disable glide mode", function()
+unexpected:addcmd("unglide", "Disable glide mode", function()
     local glide = HRP:FindFirstChild("GlideVelocity")
     if glide then glide:Destroy() end
     HUM.JumpPower = 50
     HUM.AutoRotate = true
 end)
 
-unexpected:AddCommand("iceslide", "Slide around with low friction", function()
+unexpected:addcmd("iceslide", "Slide around with low friction", function()
     for _, part in ipairs(CHAR:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.3, 0.5)
@@ -1208,7 +1263,7 @@ unexpected:AddCommand("iceslide", "Slide around with low friction", function()
     end
 end)
 
-unexpected:AddCommand("uniceslide", "Restore normal walking friction", function()
+unexpected:addcmd("uniceslide", "Restore normal walking friction", function()
     for _, part in ipairs(CHAR:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 0.5)
@@ -1216,25 +1271,25 @@ unexpected:AddCommand("uniceslide", "Restore normal walking friction", function(
     end
 end)
 
-unexpected:AddCommand("walkspeed", "Set your walkspeed", function(speed)
+unexpected:addcmd("walkspeed", "Set your walkspeed", function(speed)
     HUM.WalkSpeed = tonumber(speed) or 16
 end, nil, {"speed"})
 
-unexpected:AddCommand("jumppower", "Set your jumppower", function(power)
+unexpected:addcmd("jumppower", "Set your jumppower", function(power)
     HUM.JumpPower = tonumber(power) or 50
 end, nil, {"power"})
 
-unexpected:AddCommand("sit", "Force sit", function()
+unexpected:addcmd("sit", "Force sit", function()
     HUM.Sit = true
 end)
 
-unexpected:AddCommand("stand", "Force stand", function()
+unexpected:addcmd("stand", "Force stand", function()
     HUM.Sit = false
     HUM:ChangeState(Enum.HumanoidStateType.GettingUp)
 end, {"unsit"}, nil)
 
 local spinning, spinConnection = false, nil
-unexpected:AddCommand("spin", "Spin your character", function(speed)
+unexpected:addcmd("spin", "Spin your character", function(speed)
     speed = tonumber(speed) or 5
     if spinning and spinConnection then return end
     spinning = true
@@ -1252,7 +1307,7 @@ unexpected:AddCommand("spin", "Spin your character", function(speed)
     end)
 end, nil, {"speed"})
 
-unexpected:AddCommand("unspin", "Stop spinning your character", function()
+unexpected:addcmd("unspin", "Stop spinning your character", function()
     if spinConnection then
         spinConnection:Disconnect()
         spinConnection = nil
@@ -1260,19 +1315,19 @@ unexpected:AddCommand("unspin", "Stop spinning your character", function()
     spinning = false
 end)
 
-unexpected:AddCommand("stun", "Freezes your character (PlatformStand)", function()
+unexpected:addcmd("stun", "Freezes your character (PlatformStand)", function()
     HUM.PlatformStand = true
 end)
 
-unexpected:AddCommand("unstun", "Remove fake stun", function()
+unexpected:addcmd("unstun", "Remove fake stun", function()
     HUM.PlatformStand = false
 end)
 
-unexpected:AddCommand("jump", "Forces local jump", function()
+unexpected:addcmd("jump", "Forces local jump", function()
     HUM:ChangeState(Enum.HumanoidStateType.Jumping)
 end)
 
-unexpected:AddCommand("state", "Set HumanoidState", function(args)
+unexpected:addcmd("state", "Set HumanoidState", function(args)
     local input = args[1]
     if not input then return end
     input = input:upper()
@@ -1284,7 +1339,7 @@ unexpected:AddCommand("state", "Set HumanoidState", function(args)
     end
 end)
 
-unexpected:AddCommand("[CLIENT] freeze", "Freeze character", function()
+unexpected:addcmd("[CLIENT] freeze", "Freeze character", function()
     for _, p in ipairs(CHAR:GetChildren()) do
         if p:IsA("BasePart") then
             p.Anchored = true
@@ -1292,7 +1347,7 @@ unexpected:AddCommand("[CLIENT] freeze", "Freeze character", function()
     end
 end)
 
-unexpected:AddCommand("[CLIENT] unfreeze", "Unfreeze your character", function()
+unexpected:addcmd("[CLIENT] unfreeze", "Unfreeze your character", function()
     for _, p in ipairs(CHAR:GetChildren()) do
         if p:IsA("BasePart") then
             p.Anchored = false
@@ -1300,23 +1355,23 @@ unexpected:AddCommand("[CLIENT] unfreeze", "Unfreeze your character", function()
     end
 end)
 
-unexpected:AddCommand("print", "Prints all arguments", function(...) 
+unexpected:addcmd("print", "Prints all arguments", function(...) 
     print(...) 
 end, {"echo", "say"}, {"..."})
 
-unexpected:AddCommand("notify", "Notify all arguments", function(...) 
+unexpected:addcmd("notify", "Notify all arguments", function(...) 
     unexpected:notify("unexpected", ...)
 end, nil, {"..."})
 
-unexpected:AddCommand("cmds", "Shows commands", function()
+unexpected:addcmd("cmds", "Shows commands", function()
 	unexpected:notify("unexpected", "Check the menu.")
 end)
 
-unexpected:AddCommand("rejoin", "Rejoins the current server", function()
+unexpected:addcmd("rejoin", "Rejoins the current server", function()
     TPS:Teleport(game.PlaceId, LP)
 end)
 
-unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", function(state)
+unexpected:addcmd("keepUX", "Keep 'unexpected' running even on rejoin", function(state)
 	state = typeof(state) == "string" and state:lower() or ""
 	if state == "true" then
 		getgenv().keepUX = true
@@ -1331,7 +1386,7 @@ unexpected:AddCommand("keepUX", "Keep 'unexpected' running even on rejoin", func
 end, nil, {"true/false"})
 
 local flying, flyConnA, flyConnB = false, nil, nil
-unexpected:AddCommand("fly", "Enable flying", function(spd)
+unexpected:addcmd("fly", "Enable flying", function(spd)
 	if flying then return unexpected:notify("flying", "Unfly first before changing speed") end
 	spd, flying = tonumber(spd) or 3, true
 
@@ -1370,7 +1425,7 @@ unexpected:AddCommand("fly", "Enable flying", function(spd)
 	end)
 end, nil, {"speed"})
 
-unexpected:AddCommand("unfly", "Disable flying", function()
+unexpected:addcmd("unfly", "Disable flying", function()
 	flying = false
 	HUM.PlatformStand = false
 	for _, c in ipairs({flyConnA, flyConnB, bv, bg}) do if c then pcall(function() c:Disconnect() end) pcall(function() c:Destroy() end) end end
@@ -1379,7 +1434,7 @@ unexpected:AddCommand("unfly", "Disable flying", function()
 end)
 
 local afConn, lastSafe, count = nil, nil, 0
-unexpected:AddCommand("antifling", "Stops flings via velocity detection", function()
+unexpected:addcmd("antifling", "Stops flings via velocity detection", function()
 	if afConn then return end
 	afConn = RS.Heartbeat:Connect(function()
 		local lv, av = HRP.AssemblyLinearVelocity, HRP.AssemblyAngularVelocity
@@ -1400,12 +1455,12 @@ unexpected:AddCommand("antifling", "Stops flings via velocity detection", functi
 	end)
 end)
 
-unexpected:AddCommand("unantifling", "Disables fling protection", function()
+unexpected:addcmd("unantifling", "Disables fling protection", function()
     if afConn then afConn:Disconnect() afConn = nil end
 end)
 
 local banging, conn = false
-unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
+unexpected:addcmd("bang", "Bang someone", function(name, speedArg)
 	if banging then return end
 	local target = table.find(PLRS:GetPlayers(), function(p)
 		local n = name:lower()
@@ -1418,6 +1473,7 @@ unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
 	banging = true
 
 	conn = RS.Heartbeat:Connect(function(dt)
+	
 		if not banging then conn:Disconnect() conn = nil return end
 		local lv = thrp.CFrame.LookVector.Unit
 		local back = thrp.Position - lv * 2
@@ -1430,18 +1486,18 @@ unexpected:AddCommand("bang", "Bang someone", function(name, speedArg)
 	end)
 end)
 
-unexpected:AddCommand("unbang", "Stop banging", function()
+unexpected:addcmd("unbang", "Stop banging", function()
 	banging = false
 	conn = conn and conn:Disconnect()
 end)
 
-unexpected:AddCommand("antiafk", "Never get kicked", function()
+unexpected:addcmd("antiafk", "Never get kicked", function()
     LP.Idled:Connect(function()
         VU:ClickButton2(Vector2.new())
     end)
 end)
 
-unexpected:AddCommand("execute", "Execute code", function(...)
+unexpected:addcmd("execute", "Execute code", function(...)
     loadstring(...)()
 end, nil, {...})
 
@@ -1451,9 +1507,9 @@ showPILL()
 
 if MOBILE then
     SHS(true)
-    G2L["2"].Size = UDim2.fromOffset(339, 71)
-    G2L["5"].Size = UDim2.fromOffset(230, 54)
-    G2L["6"].ImageTransparency = 0
+    unexpected_UI["PILL"].Size = UDim2.fromOffset(339, 71)
+    unexpected_UI["CLI"].Size = UDim2.fromOffset(230, 54)
+    unexpected_UI["MENU"].ImageTransparency = 0
 end
 
 local tpCHECK = false
