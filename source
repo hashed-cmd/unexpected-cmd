@@ -336,97 +336,107 @@ function unexpected:addcmd(name, desc, func, aliases, usageArgs)
 		commandListData[string.lower(alias)] = entry
 	end
 end
-
 local function showCommands()
-	local index = 0
-	local used = {}
-	for key, entry in pairs(commandListData) do
-		if not used[entry] then
-			used[entry] = true
-			local btn = unexpected_UI["CMDEXAMPLE"]:Clone()
-			local allNames = {entry.DisplayName}
-			for _, alias in ipairs(entry.Aliases) do table.insert(allNames, alias) end
-			btn.Text = table.concat(allNames, " / ")
-			btn.Visible = true
-			btn.Position = UDim2.new(0, 0, 0, index * 32)
-			btn.Parent = unexpected_UI["BTNLIST"]
+    local index = 0
+    local used = {}
+    local TOOLTIPS = {}
+    local SORTED = {}
 
-			local usage = "usage: " .. entry.Original
-			if #entry.UsageArgs > 0 then usage = usage .. " [" .. table.concat(entry.UsageArgs, "] [") .. "]" end
+    for _, entry in pairs(commandListData) do
+        table.insert(SORTED, entry)
+    end
+    table.sort(SORTED, function(a, b)
+        return a.DisplayName:lower() < b.DisplayName:lower()
+    end)
 
-			local tooltip = Instance.new("TextLabel")
-			tooltip.BackgroundColor3 = FQ.COLORS.BACKGROUND
-			tooltip.Visible = false
-			tooltip.Font = Enum.Font.Gotham
-			tooltip.TextColor3 = FQ.COLORS.TEXT_MAIN
-			tooltip.TextSize = 18
-			tooltip.TextWrapped = true
-			tooltip.TextXAlignment = Enum.TextXAlignment.Left
-			tooltip.TextYAlignment = Enum.TextYAlignment.Top
-			tooltip.ZIndex = 9999
-			tooltip.AutomaticSize = Enum.AutomaticSize.XY
-			tooltip.Size = UDim2.new(0, 300, 0, 0)
-			tooltip.Parent = unexpected_UI["UI"]
-			tooltip.BorderSizePixel = 0
+    for _, entry in ipairs(SORTED) do
+        if not used[entry] then
+            used[entry] = true
+            local btn = unexpected_UI["CMDEXAMPLE"]:Clone()
 
-			local toolst = Instance.new("UIStroke")
-			toolst.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			toolst.Color = FQ.COLORS.STROKE
-			toolst.Parent = tooltip
+            local allNames = {entry.DisplayName}
+            for _, alias in ipairs(entry.Aliases) do table.insert(allNames, alias) end
+            btn.Text = table.concat(allNames, " / ")
 
-			local corner = Instance.new("UICorner")
-			corner.CornerRadius = UDim.new(0.1, 0)
-			corner.Parent = tooltip
+            btn.Visible = true
+            btn.Position = UDim2.new(0, 0, 0, index * 32)
+            btn.Parent = unexpected_UI["BTNLIST"]
 
-			local padding = Instance.new("UIPadding")
-			padding.PaddingBottom = UDim.new(0, 6)
-			padding.PaddingLeft = UDim.new(0, 8)
-			padding.PaddingRight = UDim.new(0, 8)
-			padding.Parent = tooltip
+            local usage = "usage: " .. entry.Original
+            if #entry.UsageArgs > 0 then
+                usage = usage .. " [" .. table.concat(entry.UsageArgs, "] [") .. "]"
+            end
 
-			local constraint = Instance.new("UITextSizeConstraint")
-			constraint.MaxTextSize = 18
-			constraint.Parent = tooltip
+            local tooltip = Instance.new("TextLabel")
+            tooltip.BackgroundColor3 = FQ.COLORS.BACKGROUND
+            tooltip.Visible = false
+            tooltip.Font = Enum.Font.Gotham
+            tooltip.TextColor3 = FQ.COLORS.TEXT_MAIN
+            tooltip.TextSize = 18
+            tooltip.TextWrapped = true
+            tooltip.TextXAlignment = Enum.TextXAlignment.Left
+            tooltip.TextYAlignment = Enum.TextYAlignment.Top
+            tooltip.ZIndex = 9999
+			tooltip.Position = UDim2.new(0, 0, -10000, 0)
+            tooltip.AutomaticSize = Enum.AutomaticSize.XY
+            tooltip.Size = UDim2.new(0, 300, 0, 0)
+            tooltip.Parent = unexpected_UI["UI"]
+            tooltip.BorderSizePixel = 0
 
-			local onHover = false
-			local hoverToken = nil
+            local toolst = Instance.new("UIStroke")
+            toolst.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            toolst.Color = FQ.COLORS.STROKE
+            toolst.Parent = tooltip
 
-			btn.MouseEnter:Connect(function()
-				onHover = true
-				local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
-				tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
-				tooltip.Text = entry.Description .. "\n" .. usage
-				tooltip.Visible = true
-				hoverToken = tick()
-			end)
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0.1, 0)
+            corner.Parent = tooltip
 
-			btn.MouseLeave:Connect(function()
-				local thisToken = tick()
-				hoverToken = thisToken
-				onHover = false
-				if hoverToken == thisToken then
-					tooltip.Visible = false
-				end
-			end)
+            local padding = Instance.new("UIPadding")
+            padding.PaddingBottom = UDim.new(0, 6)
+            padding.PaddingLeft = UDim.new(0, 8)
+            padding.PaddingRight = UDim.new(0, 8)
+            padding.Parent = tooltip
 
-			RS.RenderStepped:Connect(function()
-                if onHover and tooltip.Visible then
-                    local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
-                    tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
-                end
-	        end)
+            local constraint = Instance.new("UITextSizeConstraint")
+            constraint.MaxTextSize = 18
+            constraint.Parent = tooltip
 
-			btn.MouseButton1Click:Connect(function()
-				unexpected_UI["CLI"].Text = entry.Original
-				task.wait(0.01)
-				unexpected_UI["CLI"]:CaptureFocus()
-			end)
+            local onHover = false
 
-			table.insert(commandButtonCACHE, btn)
-			index += 1
-		end
-	end
-	unexpected_UI["BTNLIST"].CanvasSize = UDim2.new(0, 0, 0, index * 32)
+            btn.MouseEnter:Connect(function()
+                tooltip.Text = entry.Description .. "\n" .. usage
+                tooltip.Visible = true
+                onHover = true
+            end)
+
+            btn.MouseLeave:Connect(function()
+                tooltip.Visible = false
+                onHover = false
+            end)
+
+            btn.MouseButton1Click:Connect(function()
+                unexpected_UI["CLI"].Text = entry.Original
+                task.wait(0.01)
+                unexpected_UI["CLI"]:CaptureFocus()
+            end)
+
+            table.insert(TOOLTIPS, {tooltip = tooltip, hover = function() return onHover end})
+            table.insert(commandButtonCACHE, btn)
+            index += 1
+        end
+    end
+
+    RS.RenderStepped:Connect(function()
+        local mousePos = UIS:GetMouseLocation() - GS:GetGuiInset()
+        for _, data in ipairs(TOOLTIPS) do
+            if data.hover() and data.tooltip.Visible then
+                data.tooltip.Position = UDim2.new(0, mousePos.X + 10, 0, mousePos.Y + 10)
+            end
+        end
+    end)
+
+    unexpected_UI["BTNLIST"].CanvasSize = UDim2.new(0, 0, 0, index * 32)
 end
 
 --#notification
